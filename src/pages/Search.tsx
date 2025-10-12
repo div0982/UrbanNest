@@ -32,7 +32,18 @@ const Search = () => {
     foodIncluded: false,
     verified: false,
     roomType: "any",
-    sortBy: "relevance"
+    sortBy: "relevance",
+    // New filter options
+    hasAC: false,
+    hasWiFi: false,
+    hasParking: false,
+    hasGym: false,
+    hasLaundry: false,
+    hasSecurity: false,
+    hasElevator: false,
+    hasBalcony: false,
+    hasGeyser: false,
+    hasRefrigerator: false
   });
   
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -75,6 +86,19 @@ const Search = () => {
       if (filters.foodIncluded && !p.foodIncluded) return false;
       if (filters.verified && !p.verified) return false;
       if (filters.roomType !== "any" && p.roomType !== filters.roomType) return false;
+      
+      // Apply amenity filters
+      if (filters.hasAC && !p.hasAC) return false;
+      if (filters.hasWiFi && !p.hasWiFi) return false;
+      if (filters.hasParking && !p.hasParking) return false;
+      if (filters.hasGym && !p.hasGym) return false;
+      if (filters.hasLaundry && !p.hasLaundry) return false;
+      if (filters.hasSecurity && !p.hasSecurity) return false;
+      if (filters.hasElevator && !p.hasElevator) return false;
+      if (filters.hasBalcony && !p.hasBalcony) return false;
+      if (filters.hasGeyser && !p.hasGeyser) return false;
+      if (filters.hasRefrigerator && !p.hasRefrigerator) return false;
+      
       return true;
     });
     
@@ -113,6 +137,7 @@ const Search = () => {
               <Input
                 defaultValue={q}
                 placeholder="Search city, locality, PG name..."
+                className="rounded-xl"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     const value = (e.target as HTMLInputElement).value.trim();
@@ -126,6 +151,7 @@ const Search = () => {
                   const value = (input?.value || "").trim();
                   navigate(`/search?q=${encodeURIComponent(value)}`);
                 }}
+                className="rounded-xl"
               >
                 <SearchIcon size={18} className="mr-1" />
                 Search
@@ -133,11 +159,11 @@ const Search = () => {
             </div>
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="gap-2 rounded-xl">
                   <SlidersHorizontal size={18} /> Filters
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80">
+              <SheetContent side="right" className="w-80 mobile-safe-area rounded-l-2xl">
                 <SheetHeader>
                   <SheetTitle>Filters</SheetTitle>
                   <SheetDescription>Select options to refine properties</SheetDescription>
@@ -210,7 +236,7 @@ const Search = () => {
                     </Select>
                   </div>
 
-                  {/* Checkboxes */}
+                  {/* Basic Checkboxes */}
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
                       <Checkbox
@@ -230,6 +256,93 @@ const Search = () => {
                     </div>
                   </div>
 
+                  {/* Amenities */}
+                  <div>
+                    <label className="text-sm font-medium mb-3 block">Amenities</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="ac"
+                          checked={filters.hasAC}
+                          onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasAC: !!checked }))}
+                        />
+                        <label htmlFor="ac" className="text-sm">AC</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="wifi"
+                          checked={filters.hasWiFi}
+                          onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasWiFi: !!checked }))}
+                        />
+                        <label htmlFor="wifi" className="text-sm">WiFi</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="parking"
+                          checked={filters.hasParking}
+                          onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasParking: !!checked }))}
+                        />
+                        <label htmlFor="parking" className="text-sm">Parking</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="gym"
+                          checked={filters.hasGym}
+                          onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasGym: !!checked }))}
+                        />
+                        <label htmlFor="gym" className="text-sm">Gym</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="laundry"
+                          checked={filters.hasLaundry}
+                          onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasLaundry: !!checked }))}
+                        />
+                        <label htmlFor="laundry" className="text-sm">Laundry</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="security"
+                          checked={filters.hasSecurity}
+                          onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasSecurity: !!checked }))}
+                        />
+                        <label htmlFor="security" className="text-sm">Security</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="elevator"
+                          checked={filters.hasElevator}
+                          onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasElevator: !!checked }))}
+                        />
+                        <label htmlFor="elevator" className="text-sm">Elevator</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="balcony"
+                          checked={filters.hasBalcony}
+                          onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasBalcony: !!checked }))}
+                        />
+                        <label htmlFor="balcony" className="text-sm">Balcony</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="geyser"
+                          checked={filters.hasGeyser}
+                          onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasGeyser: !!checked }))}
+                        />
+                        <label htmlFor="geyser" className="text-sm">Geyser</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="refrigerator"
+                          checked={filters.hasRefrigerator}
+                          onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasRefrigerator: !!checked }))}
+                        />
+                        <label htmlFor="refrigerator" className="text-sm">Refrigerator</label>
+                      </div>
+                    </div>
+                  </div>
+
                   <Button 
                     variant="outline" 
                     className="w-full"
@@ -239,7 +352,17 @@ const Search = () => {
                       foodIncluded: false,
                       verified: false,
                       roomType: "any",
-                      sortBy: "relevance"
+                      sortBy: "relevance",
+                      hasAC: false,
+                      hasWiFi: false,
+                      hasParking: false,
+                      hasGym: false,
+                      hasLaundry: false,
+                      hasSecurity: false,
+                      hasElevator: false,
+                      hasBalcony: false,
+                      hasGeyser: false,
+                      hasRefrigerator: false
                     })}
                   >
                     Clear Filters
@@ -280,7 +403,7 @@ const Search = () => {
           </div>
 
           {/* Results Grid */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {filtered.map((p, idx) => (
               <div key={`sr-${idx}`} className="relative">
                 <PropertyCard {...p} />

@@ -63,14 +63,24 @@ const ListPG = () => {
   });
 
   const amenitiesList = [
-    "WiFi", "AC", "Washing Machine", "TV", "Fridge", "Geyser",
+    "WiFi", "AC", "Washing Machine", "TV", "Refrigerator", "Geyser",
     "Parking", "Power Backup", "CCTV", "Security Guard",
-    "Housekeeping", "Water Purifier", "Gym", "Common Area"
+    "Housekeeping", "Water Purifier", "Gym", "Common Area",
+    "Elevator", "Balcony", "Laundry Service", "Study Room",
+    "Cafeteria", "Rooftop", "Garden", "Swimming Pool"
   ];
 
   const cities = [
     "Bangalore", "Mumbai", "Delhi", "Pune", "Hyderabad",
-    "Chennai", "Kolkata", "Ahmedabad", "Gurgaon", "Noida"
+    "Chennai", "Kolkata", "Ahmedabad", "Gurgaon", "Noida",
+    "Jaipur", "Lucknow", "Kanpur", "Nagpur", "Indore",
+    "Thane", "Bhopal", "Visakhapatnam", "Pimpri-Chinchwad",
+    "Patna", "Vadodara", "Ghaziabad", "Ludhiana", "Agra",
+    "Nashik", "Faridabad", "Meerut", "Rajkot", "Kalyan",
+    "Vasai-Virar", "Varanasi", "Srinagar", "Aurangabad",
+    "Navi Mumbai", "Solapur", "Vijayawada", "Kolhapur",
+    "Amritsar", "Noida", "Ranchi", "Howrah", "Coimbatore",
+    "Raipur", "Jabalpur", "Gwalior", "Chandigarh", "Tiruchirappalli"
   ];
 
   const handleInputChange = (field: string, value: any) => {
@@ -120,7 +130,7 @@ const ListPG = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-1 py-12 bg-gradient-to-b from-background to-muted/20">
+      <main className="flex-1 py-6 md:py-12 bg-gradient-to-b from-background to-muted/20 mobile-safe-area">
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Header */}
           <div className="text-center mb-8">
@@ -432,7 +442,7 @@ const ListPG = () => {
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
                     <Label>Available Amenities</Label>
-                    <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                       {amenitiesList.map((amenity) => (
                         <div key={amenity} className="flex items-center space-x-2">
                           <Checkbox

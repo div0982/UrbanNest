@@ -10,6 +10,13 @@ import PropertyDetails from "./pages/PropertyDetails";
 import Favorites from "./pages/Favorites";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import { MobileFeatures } from "./components/MobileFeatures";
+import StudentsPage from "./pages/Students";
+import ProfessionalsPage from "./pages/Professionals";
+import CoLivingPage from "./pages/CoLiving";
+import PremiumPage from "./pages/Premium";
+import OwnerDashboard from "./pages/OwnerDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +33,13 @@ const App = () => (
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/list-pg" element={<ListPG />} />
+          <Route path="/students" element={<StudentsPage />} />
+          <Route path="/professionals" element={<ProfessionalsPage />} />
+          <Route path="/co-living" element={<CoLivingPage />} />
+          <Route path="/premium" element={<PremiumPage />} />
+          <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/mobile-test" element={<MobileFeatures />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -41,15 +41,29 @@ const Header = () => {
 
         {/* Actions */}
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" className="hidden md:flex gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="hidden md:flex gap-2 rounded-xl"
+            onClick={() => navigate("/owner-dashboard")}
+          >
             <Building size={18} />
             For Owners
           </Button>
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="hidden md:flex gap-2 rounded-xl"
+            onClick={() => navigate("/admin-dashboard")}
+          >
+            <User size={18} />
+            Admin
+          </Button>
+          <Button variant="outline" size="sm" className="gap-2 rounded-xl">
             <User size={18} />
             <span className="hidden sm:inline">Sign In</span>
           </Button>
-          <Button size="sm" className="hidden sm:flex">
+          <Button size="sm" className="hidden sm:flex rounded-xl">
             Get Started
           </Button>
           <Sheet>
@@ -58,7 +72,7 @@ const Header = () => {
                 <Menu size={20} />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-80">
+            <SheetContent side="right" className="w-80 rounded-l-2xl">
               <SheetHeader>
                 <SheetTitle className="text-left">Menu</SheetTitle>
               </SheetHeader>
@@ -83,13 +97,24 @@ const Header = () => {
                 </button>
               </nav>
               <div className="mt-6 grid gap-3">
-                <Button variant="ghost" className="justify-start gap-2">
+                <Button 
+                  variant="ghost" 
+                  className="justify-start gap-2 rounded-xl"
+                  onClick={() => navigate("/owner-dashboard")}
+                >
                   <Building size={18} /> For Owners
                 </Button>
-                <Button variant="outline" className="justify-start gap-2">
+                <Button 
+                  variant="ghost" 
+                  className="justify-start gap-2 rounded-xl"
+                  onClick={() => navigate("/admin-dashboard")}
+                >
+                  <User size={18} /> Admin Dashboard
+                </Button>
+                <Button variant="outline" className="justify-start gap-2 rounded-xl">
                   <User size={18} /> Sign In
                 </Button>
-                <Button className="justify-start">Get Started</Button>
+                <Button className="justify-start rounded-xl">Get Started</Button>
               </div>
             </SheetContent>
           </Sheet>

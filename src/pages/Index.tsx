@@ -128,23 +128,27 @@ const Index = () => {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((category, index) => (
-            <div
-              key={index}
-              className="group p-6 rounded-2xl bg-gradient-to-br from-background to-muted/50 border-2 border-border hover:border-primary/40 transition-all duration-300 hover:shadow-lg cursor-pointer"
-            >
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <category.icon className="text-primary" size={28} />
+          {categories.map((category, index) => {
+            const routes = ["/students", "/professionals", "/co-living", "/premium"];
+            return (
+              <div
+                key={index}
+                className="group p-6 rounded-2xl bg-gradient-to-br from-background to-muted/50 border-2 border-border hover:border-primary/40 transition-all duration-300 hover:shadow-lg cursor-pointer"
+                onClick={() => navigate(routes[index])}
+              >
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <category.icon className="text-primary" size={28} />
+                </div>
+                <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
+                  {category.title}
+                </h3>
+                <p className="text-muted-foreground text-sm mb-3">
+                  {category.description}
+                </p>
+                <Badge variant="outline">{category.count} listings</Badge>
               </div>
-              <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
-                {category.title}
-              </h3>
-              <p className="text-muted-foreground text-sm mb-3">
-                {category.description}
-              </p>
-              <Badge variant="outline">{category.count} listings</Badge>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
