@@ -182,3 +182,6 @@ const CoLivingPage = () => {
 };
 
 export default CoLivingPage;
+
+
+

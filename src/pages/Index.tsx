@@ -5,6 +5,7 @@ import PropertyCard from "@/components/PropertyCard";
 import HowItWorks from "@/components/HowItWorks";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
+import FirebaseStatus from "@/components/FirebaseStatus";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, Briefcase, Users2, TrendingUp } from "lucide-react";
@@ -106,7 +107,12 @@ const Index = () => {
               Hand-picked verified accommodations across top cities
             </p>
           </div>
-          <Button variant="outline">View All</Button>
+          <Button 
+            variant="outline"
+            onClick={() => navigate("/search")}
+          >
+            View All
+          </Button>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -176,9 +182,19 @@ const Index = () => {
               size="lg" 
               variant="outline" 
               className="bg-transparent border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10"
+              onClick={() => navigate("/#how-it-works")}
             >
               Learn More
             </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Firebase Status - Development Only */}
+      <section className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-center">
+            <FirebaseStatus />
           </div>
         </div>
       </section>

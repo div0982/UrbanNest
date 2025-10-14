@@ -49,3 +49,6 @@ export const triggerHaptic = async (style: ImpactStyle = ImpactStyle.Medium) => 
 
 export const isNativePlatform = () => Capacitor.isNativePlatform();
 export const getPlatform = () => Capacitor.getPlatform();
+
+
+

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
+import RoleManagement from "@/components/RoleManagement";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -275,10 +276,11 @@ const AdminDashboard = () => {
 
           {/* Main Content Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 rounded-xl">
+            <TabsList className="grid w-full grid-cols-6 rounded-xl">
               <TabsTrigger value="overview" className="rounded-lg">Overview</TabsTrigger>
               <TabsTrigger value="properties" className="rounded-lg">Properties</TabsTrigger>
               <TabsTrigger value="users" className="rounded-lg">Users</TabsTrigger>
+              <TabsTrigger value="roles" className="rounded-lg">Roles</TabsTrigger>
               <TabsTrigger value="complaints" className="rounded-lg">Complaints</TabsTrigger>
               <TabsTrigger value="analytics" className="rounded-lg">Analytics</TabsTrigger>
             </TabsList>
@@ -524,6 +526,11 @@ const AdminDashboard = () => {
               </Card>
             </TabsContent>
 
+            {/* Roles Tab */}
+            <TabsContent value="roles" className="space-y-6">
+              <RoleManagement />
+            </TabsContent>
+
             {/* Complaints Tab */}
             <TabsContent value="complaints" className="space-y-6">
               <Card className="rounded-2xl">
@@ -612,3 +619,6 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
+
+

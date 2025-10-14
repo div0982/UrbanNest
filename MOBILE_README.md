@@ -132,3 +132,6 @@ The app has been optimized for mobile with:
 - [Ionic Documentation](https://ionicframework.com/docs)
 - [React Documentation](https://react.dev)
 - [Vite Documentation](https://vitejs.dev)
+
+
+

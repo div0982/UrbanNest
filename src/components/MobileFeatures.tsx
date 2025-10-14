@@ -42,3 +42,6 @@ export const MobileFeatures: React.FC = () => {
     </Card>
   );
 };
+
+
+

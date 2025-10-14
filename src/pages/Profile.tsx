@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
@@ -25,12 +26,14 @@ import {
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { currentUser, userData, logout, updateUserData } = useAuth();
+  
   const [user, setUser] = useState({
-    name: "John Doe",
-    email: "john.doe@example.com",
+    name: userData?.name || "User",
+    email: userData?.email || "user@example.com",
     phone: "+91 98765 43210",
     location: "Bangalore, India",
-    joinDate: "2024-01-15"
+    joinDate: userData?.createdAt?.toDate?.() || new Date()
   });
   
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -54,9 +57,16 @@ const Profile = () => {
   ]);
 
   useEffect(() => {
-    const favs = localStorage.getItem("favorites");
-    if (favs) setFavorites(new Set(JSON.parse(favs)));
-  }, []);
+    if (userData) {
+      setUser(prev => ({
+        ...prev,
+        name: userData.name,
+        email: userData.email,
+        joinDate: userData.createdAt
+      }));
+      setFavorites(new Set(userData.likedProperties));
+    }
+  }, [userData]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -247,7 +257,11 @@ const Profile = () => {
                     <Settings size={16} />
                     Privacy Settings
                   </Button>
-                  <Button variant="outline" className="w-full gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="w-full gap-2"
+                    onClick={logout}
+                  >
                     <LogOut size={16} />
                     Sign Out
                   </Button>

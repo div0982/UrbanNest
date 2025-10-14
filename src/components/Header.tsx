@@ -1,10 +1,22 @@
-import { Home, Menu, User, Building } from "lucide-react";
+import { Home, Menu, User, Building, LogOut, Shield, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
   const navigate = useNavigate();
+  const { currentUser, userData, logout, isAdmin, isOwner, hasElevatedPrivileges, highestRole } = useAuth();
+
+  // Debug logging
+  console.log('Header - Role Debug:', { 
+    isAdmin, 
+    isOwner, 
+    hasElevatedPrivileges, 
+    highestRole,
+    currentUser: !!currentUser 
+  });
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -25,47 +37,107 @@ const Header = () => {
 
         {/* Navigation - Desktop */}
         <nav className="hidden md:flex items-center gap-6">
-          <a href="#" className="text-sm font-medium hover:text-primary transition-colors">
-            Find PGs
-          </a>
-          <a href="#" className="text-sm font-medium hover:text-primary transition-colors">
-            How it Works
-          </a>
           <button 
-            onClick={() => navigate("/list-pg")} 
+            onClick={() => navigate("/search")} 
             className="text-sm font-medium hover:text-primary transition-colors"
           >
-            List Your PG
+            Find PGs
           </button>
+          <button 
+            onClick={() => navigate("/#how-it-works")} 
+            className="text-sm font-medium hover:text-primary transition-colors"
+          >
+            How it Works
+          </button>
+          {/* Only show "List Your PG" for owners and admins */}
+          {(isOwner || isAdmin) && (
+            <button 
+              onClick={() => navigate("/list-pg")} 
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
+              List Your PG
+            </button>
+          )}
         </nav>
 
         {/* Actions */}
         <div className="flex items-center gap-3">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="hidden md:flex gap-2 rounded-xl"
-            onClick={() => navigate("/owner-dashboard")}
-          >
-            <Building size={18} />
-            For Owners
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="hidden md:flex gap-2 rounded-xl"
-            onClick={() => navigate("/admin-dashboard")}
-          >
-            <User size={18} />
-            Admin
-          </Button>
-          <Button variant="outline" size="sm" className="gap-2 rounded-xl">
-            <User size={18} />
-            <span className="hidden sm:inline">Sign In</span>
-          </Button>
-          <Button size="sm" className="hidden sm:flex rounded-xl">
-            Get Started
-          </Button>
+          {/* Role-based navigation */}
+          {/* Show "For Owners" for owners and admins */}
+          {(isOwner || isAdmin) && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="hidden md:flex gap-2 rounded-xl"
+              onClick={() => navigate("/owner-dashboard")}
+            >
+              <Building size={18} />
+              For Owners
+              {isOwner && <Badge variant="secondary" className="ml-1 text-xs">Owner</Badge>}
+            </Button>
+          )}
+          
+          {/* Show "Admin" only for admins */}
+          {isAdmin && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="hidden md:flex gap-2 rounded-xl"
+              onClick={() => navigate("/admin-dashboard")}
+            >
+              <Shield size={18} />
+              Admin
+              <Badge variant="destructive" className="ml-1 text-xs">Admin</Badge>
+            </Button>
+          )}
+          
+          {currentUser ? (
+            <>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2 rounded-xl"
+                onClick={() => navigate("/profile")}
+              >
+                <User size={18} />
+                <span className="hidden sm:inline">{userData?.name || "Profile"}</span>
+                <Badge 
+                  variant={highestRole === 'admin' ? 'destructive' : highestRole === 'owner' ? 'secondary' : 'outline'}
+                  className="ml-1 text-xs"
+                >
+                  {highestRole}
+                </Badge>
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="gap-2 rounded-xl"
+                onClick={logout}
+              >
+                <LogOut size={18} />
+                <span className="hidden sm:inline">Logout</span>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2 rounded-xl"
+                onClick={() => navigate("/login")}
+              >
+                <User size={18} />
+                <span className="hidden sm:inline">Sign In</span>
+              </Button>
+              <Button 
+                size="sm" 
+                className="hidden sm:flex rounded-xl"
+                onClick={() => navigate("/register")}
+              >
+                Get Started
+              </Button>
+            </>
+          )}
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
@@ -89,32 +161,75 @@ const Header = () => {
                 >
                   How it Works
                 </button>
-                <button 
-                  onClick={() => navigate("/list-pg")}
-                  className="text-left text-sm font-medium py-2 px-3 rounded-md hover:bg-muted"
-                >
-                  List Your PG
-                </button>
+                {/* Only show "List Your PG" for owners and admins */}
+                {(isOwner || isAdmin) && (
+                  <button 
+                    onClick={() => navigate("/list-pg")}
+                    className="text-left text-sm font-medium py-2 px-3 rounded-md hover:bg-muted"
+                  >
+                    List Your PG
+                  </button>
+                )}
               </nav>
               <div className="mt-6 grid gap-3">
-                <Button 
-                  variant="ghost" 
-                  className="justify-start gap-2 rounded-xl"
-                  onClick={() => navigate("/owner-dashboard")}
-                >
-                  <Building size={18} /> For Owners
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  className="justify-start gap-2 rounded-xl"
-                  onClick={() => navigate("/admin-dashboard")}
-                >
-                  <User size={18} /> Admin Dashboard
-                </Button>
-                <Button variant="outline" className="justify-start gap-2 rounded-xl">
-                  <User size={18} /> Sign In
-                </Button>
-                <Button className="justify-start rounded-xl">Get Started</Button>
+                {/* Role-based mobile navigation */}
+                {/* Show "For Owners" for owners and admins */}
+                {(isOwner || isAdmin) && (
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start gap-2 rounded-xl"
+                    onClick={() => navigate("/owner-dashboard")}
+                  >
+                    <Building size={18} /> For Owners
+                    {isOwner && <Badge variant="secondary" className="ml-auto text-xs">Owner</Badge>}
+                  </Button>
+                )}
+                
+                {/* Show "Admin Dashboard" only for admins */}
+                {isAdmin && (
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start gap-2 rounded-xl"
+                    onClick={() => navigate("/admin-dashboard")}
+                  >
+                    <Shield size={18} /> Admin Dashboard
+                    <Badge variant="destructive" className="ml-auto text-xs">Admin</Badge>
+                  </Button>
+                )}
+                {currentUser ? (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      className="justify-start gap-2 rounded-xl"
+                      onClick={() => navigate("/profile")}
+                    >
+                      <User size={18} /> {userData?.name || "Profile"}
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-2 rounded-xl"
+                      onClick={logout}
+                    >
+                      <LogOut size={18} /> Logout
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      className="justify-start gap-2 rounded-xl"
+                      onClick={() => navigate("/login")}
+                    >
+                      <User size={18} /> Sign In
+                    </Button>
+                    <Button 
+                      className="justify-start rounded-xl"
+                      onClick={() => navigate("/register")}
+                    >
+                      Get Started
+                    </Button>
+                  </>
+                )}
               </div>
             </SheetContent>
           </Sheet>

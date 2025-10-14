@@ -2,11 +2,13 @@ import { Home, Search, Heart, User, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const { isOwner, isAdmin } = useAuth();
 
   useEffect(() => {
     const favs = localStorage.getItem("favorites");
@@ -26,13 +28,14 @@ const BottomNav = () => {
       path: "/search",
       active: location.pathname === "/search"
     },
-    {
+    // Only show "List PG" for owners and admins
+    ...(isOwner || isAdmin ? [{
       icon: Plus,
       label: "List PG",
       path: "/list-pg",
       active: location.pathname === "/list-pg",
       variant: "default" as const
-    },
+    }] : []),
     {
       icon: Heart,
       label: "Favorites",

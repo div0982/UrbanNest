@@ -164,38 +164,38 @@ const Search = () => {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-80 mobile-safe-area rounded-l-2xl">
-                <SheetHeader>
-                  <SheetTitle>Filters</SheetTitle>
-                  <SheetDescription>Select options to refine properties</SheetDescription>
+                <SheetHeader className="pb-4">
+                  <SheetTitle className="text-lg font-semibold">Filters</SheetTitle>
+                  <SheetDescription className="text-sm text-muted-foreground">Refine your search</SheetDescription>
                 </SheetHeader>
-                <div className="mt-6 space-y-6">
+                <div className="mt-2 space-y-6 overflow-y-auto">
                   {/* Price Range */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Price Range</label>
-                    <div className="px-2">
+                  <div className="bg-muted/30 rounded-xl p-4">
+                    <label className="text-sm font-semibold mb-3 block text-foreground">Price Range</label>
+                    <div className="px-1">
                       <Slider
                         value={filters.priceRange}
                         onValueChange={(value) => setFilters(prev => ({ ...prev, priceRange: value }))}
                         max={25000}
                         min={3000}
                         step={500}
-                        className="mb-2"
+                        className="mb-3"
                       />
-                      <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>₹{filters.priceRange[0].toLocaleString()}</span>
-                        <span>₹{filters.priceRange[1].toLocaleString()}</span>
+                      <div className="flex justify-between text-sm font-medium">
+                        <span className="bg-background px-2 py-1 rounded-md">₹{filters.priceRange[0].toLocaleString()}</span>
+                        <span className="bg-background px-2 py-1 rounded-md">₹{filters.priceRange[1].toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Gender */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Gender Preference</label>
+                  <div className="bg-muted/30 rounded-xl p-4">
+                    <label className="text-sm font-semibold mb-3 block text-foreground">Gender Preference</label>
                     <Select value={filters.gender} onValueChange={(value) => setFilters(prev => ({ ...prev, gender: value }))}>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-background border-border/50 rounded-lg">
                         <SelectValue placeholder="Any" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="rounded-xl">
                         <SelectItem value="any">Any</SelectItem>
                         <SelectItem value="Male">Male Only</SelectItem>
                         <SelectItem value="Female">Female Only</SelectItem>
@@ -205,13 +205,13 @@ const Search = () => {
                   </div>
 
                   {/* Room Type */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Room Type</label>
+                  <div className="bg-muted/30 rounded-xl p-4">
+                    <label className="text-sm font-semibold mb-3 block text-foreground">Room Type</label>
                     <Select value={filters.roomType} onValueChange={(value) => setFilters(prev => ({ ...prev, roomType: value }))}>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-background border-border/50 rounded-lg">
                         <SelectValue placeholder="Any" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="rounded-xl">
                         <SelectItem value="any">Any</SelectItem>
                         <SelectItem value="Single">Single</SelectItem>
                         <SelectItem value="Shared">Shared</SelectItem>
@@ -221,13 +221,13 @@ const Search = () => {
                   </div>
 
                   {/* Sort By */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Sort By</label>
+                  <div className="bg-muted/30 rounded-xl p-4">
+                    <label className="text-sm font-semibold mb-3 block text-foreground">Sort By</label>
                     <Select value={filters.sortBy} onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value }))}>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-background border-border/50 rounded-lg">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="rounded-xl">
                         <SelectItem value="relevance">Relevance</SelectItem>
                         <SelectItem value="price-low">Price: Low to High</SelectItem>
                         <SelectItem value="price-high">Price: High to Low</SelectItem>
@@ -237,115 +237,130 @@ const Search = () => {
                   </div>
 
                   {/* Basic Checkboxes */}
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="food"
-                        checked={filters.foodIncluded}
-                        onCheckedChange={(checked) => setFilters(prev => ({ ...prev, foodIncluded: !!checked }))}
-                      />
-                      <label htmlFor="food" className="text-sm">Food Included</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="verified"
-                        checked={filters.verified}
-                        onCheckedChange={(checked) => setFilters(prev => ({ ...prev, verified: !!checked }))}
-                      />
-                      <label htmlFor="verified" className="text-sm">Verified Only</label>
+                  <div className="bg-muted/30 rounded-xl p-4">
+                    <label className="text-sm font-semibold mb-3 block text-foreground">Preferences</label>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id="food"
+                          checked={filters.foodIncluded}
+                          onCheckedChange={(checked) => setFilters(prev => ({ ...prev, foodIncluded: !!checked }))}
+                          className="rounded-md"
+                        />
+                        <label htmlFor="food" className="text-sm font-medium cursor-pointer">Food Included</label>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id="verified"
+                          checked={filters.verified}
+                          onCheckedChange={(checked) => setFilters(prev => ({ ...prev, verified: !!checked }))}
+                          className="rounded-md"
+                        />
+                        <label htmlFor="verified" className="text-sm font-medium cursor-pointer">Verified Only</label>
+                      </div>
                     </div>
                   </div>
 
                   {/* Amenities */}
-                  <div>
-                    <label className="text-sm font-medium mb-3 block">Amenities</label>
+                  <div className="bg-muted/30 rounded-xl p-4">
+                    <label className="text-sm font-semibold mb-3 block text-foreground">Amenities</label>
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3">
                         <Checkbox
                           id="ac"
                           checked={filters.hasAC}
                           onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasAC: !!checked }))}
+                          className="rounded-md"
                         />
-                        <label htmlFor="ac" className="text-sm">AC</label>
+                        <label htmlFor="ac" className="text-sm font-medium cursor-pointer">AC</label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3">
                         <Checkbox
                           id="wifi"
                           checked={filters.hasWiFi}
                           onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasWiFi: !!checked }))}
+                          className="rounded-md"
                         />
-                        <label htmlFor="wifi" className="text-sm">WiFi</label>
+                        <label htmlFor="wifi" className="text-sm font-medium cursor-pointer">WiFi</label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3">
                         <Checkbox
                           id="parking"
                           checked={filters.hasParking}
                           onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasParking: !!checked }))}
+                          className="rounded-md"
                         />
-                        <label htmlFor="parking" className="text-sm">Parking</label>
+                        <label htmlFor="parking" className="text-sm font-medium cursor-pointer">Parking</label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3">
                         <Checkbox
                           id="gym"
                           checked={filters.hasGym}
                           onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasGym: !!checked }))}
+                          className="rounded-md"
                         />
-                        <label htmlFor="gym" className="text-sm">Gym</label>
+                        <label htmlFor="gym" className="text-sm font-medium cursor-pointer">Gym</label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3">
                         <Checkbox
                           id="laundry"
                           checked={filters.hasLaundry}
                           onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasLaundry: !!checked }))}
+                          className="rounded-md"
                         />
-                        <label htmlFor="laundry" className="text-sm">Laundry</label>
+                        <label htmlFor="laundry" className="text-sm font-medium cursor-pointer">Laundry</label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3">
                         <Checkbox
                           id="security"
                           checked={filters.hasSecurity}
                           onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasSecurity: !!checked }))}
+                          className="rounded-md"
                         />
-                        <label htmlFor="security" className="text-sm">Security</label>
+                        <label htmlFor="security" className="text-sm font-medium cursor-pointer">Security</label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3">
                         <Checkbox
                           id="elevator"
                           checked={filters.hasElevator}
                           onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasElevator: !!checked }))}
+                          className="rounded-md"
                         />
-                        <label htmlFor="elevator" className="text-sm">Elevator</label>
+                        <label htmlFor="elevator" className="text-sm font-medium cursor-pointer">Elevator</label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3">
                         <Checkbox
                           id="balcony"
                           checked={filters.hasBalcony}
                           onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasBalcony: !!checked }))}
+                          className="rounded-md"
                         />
-                        <label htmlFor="balcony" className="text-sm">Balcony</label>
+                        <label htmlFor="balcony" className="text-sm font-medium cursor-pointer">Balcony</label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3">
                         <Checkbox
                           id="geyser"
                           checked={filters.hasGeyser}
                           onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasGeyser: !!checked }))}
+                          className="rounded-md"
                         />
-                        <label htmlFor="geyser" className="text-sm">Geyser</label>
+                        <label htmlFor="geyser" className="text-sm font-medium cursor-pointer">Geyser</label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3">
                         <Checkbox
                           id="refrigerator"
                           checked={filters.hasRefrigerator}
                           onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasRefrigerator: !!checked }))}
+                          className="rounded-md"
                         />
-                        <label htmlFor="refrigerator" className="text-sm">Refrigerator</label>
+                        <label htmlFor="refrigerator" className="text-sm font-medium cursor-pointer">Refrigerator</label>
                       </div>
                     </div>
                   </div>
 
                   <Button 
                     variant="outline" 
-                    className="w-full"
+                    className="w-full rounded-xl border-border/50"
                     onClick={() => setFilters({
                       priceRange: [5000, 20000],
                       gender: "any",
@@ -365,7 +380,7 @@ const Search = () => {
                       hasRefrigerator: false
                     })}
                   >
-                    Clear Filters
+                    Clear All Filters
                   </Button>
                 </div>
               </SheetContent>
