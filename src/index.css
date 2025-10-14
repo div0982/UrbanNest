@@ -2,6 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile bottom navigation fixes */
+@layer base {
+  /* Ensure body has proper padding for fixed bottom nav on mobile */
+  @media (max-width: 768px) {
+    body {
+      padding-bottom: 80px; /* Space for bottom nav */
+      overflow-x: hidden; /* Prevent horizontal scroll */
+    }
+    
+    /* Ensure main content doesn't overlap with bottom nav */
+    main {
+      margin-bottom: 80px;
+    }
+  }
+  
+  /* Ensure bottom nav stays fixed */
+  .bottom-nav-fixed {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+    transform: translateZ(0); /* Force hardware acceleration */
+    will-change: transform; /* Optimize for animations */
+  }
+  
+  /* Prevent any parent elements from affecting the fixed position */
+  .bottom-nav-fixed * {
+    position: static !important;
+  }
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
