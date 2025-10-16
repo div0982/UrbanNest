@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { demoProperties } from "@/data/properties";
+import PropertyMap from "@/components/PropertyMap";
 import { 
   MapPin, 
   Users, 
@@ -184,6 +185,33 @@ const PropertyDetails = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Location Map */}
+              {property.latitude && property.longitude && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="w-5 h-5" />
+                      Location
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <PropertyMap
+                      properties={[property]}
+                      selectedProperty={property}
+                      height="400px"
+                      className="rounded-lg"
+                    />
+                    {property.fullAddress && (
+                      <div className="p-4 border-t">
+                        <p className="text-sm text-gray-600">
+                          <strong>Full Address:</strong> {property.fullAddress}
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Reviews */}
               <Card>

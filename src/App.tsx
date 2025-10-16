@@ -21,6 +21,7 @@ import CoLivingPage from "./pages/CoLiving";
 import PremiumPage from "./pages/Premium";
 import OwnerDashboard from "./pages/OwnerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import MapPage from "./pages/MapPage";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,7 @@ const App = () => (
               } 
             />
             <Route path="/mobile-test" element={<MobileFeatures />} />
+            <Route path="/map" element={<MapPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

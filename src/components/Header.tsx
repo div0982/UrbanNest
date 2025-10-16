@@ -1,4 +1,4 @@
-import { Home, Menu, User, Building, LogOut, Shield, Settings } from "lucide-react";
+import { Home, Menu, User, Building, LogOut, Shield, Settings, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +42,13 @@ const Header = () => {
             className="text-sm font-medium hover:text-primary transition-colors"
           >
             Find PGs
+          </button>
+          <button 
+            onClick={() => navigate("/map")} 
+            className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
+          >
+            <MapPin className="w-4 h-4" />
+            Map View
           </button>
           <button 
             onClick={() => navigate("/#how-it-works")} 
@@ -154,6 +161,19 @@ const Header = () => {
                   className="text-left text-sm font-medium py-2 px-3 rounded-md hover:bg-muted"
                 >
                   Home
+                </button>
+                <button 
+                  onClick={() => navigate("/search")}
+                  className="text-left text-sm font-medium py-2 px-3 rounded-md hover:bg-muted"
+                >
+                  Find PGs
+                </button>
+                <button 
+                  onClick={() => navigate("/map")}
+                  className="text-left text-sm font-medium py-2 px-3 rounded-md hover:bg-muted flex items-center gap-2"
+                >
+                  <MapPin className="w-4 h-4" />
+                  Map View
                 </button>
                 <button 
                   onClick={() => navigate("/#how-it-works")}

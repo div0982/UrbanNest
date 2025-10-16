@@ -178,3 +178,87 @@ All colors MUST be HSL.
     min-width: 44px;
   }
 }
+
+/* Webview-specific styles - Remove browser-like features */
+@layer base {
+  /* Hide scrollbars for webview */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  
+  * {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  /* Remove browser-like selection */
+  ::selection {
+    background: transparent;
+  }
+
+  /* Remove focus outlines that look browser-like */
+  *:focus {
+    outline: none;
+  }
+
+  /* Remove text selection highlighting */
+  * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow text selection in input fields */
+  input, textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+
+  /* Remove browser-like context menu */
+  * {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Remove browser-like drag behavior */
+  * {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+  }
+
+  /* Remove browser-like image dragging */
+  img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+  }
+
+  /* Remove browser-like link styling */
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  /* Remove browser-like button styling */
+  button {
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+}

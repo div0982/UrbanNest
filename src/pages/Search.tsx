@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import PropertyCard from "@/components/PropertyCard";
+import PropertyMapView from "@/components/PropertyMapView";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +14,7 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 import { demoProperties } from "@/data/properties";
-import { Search as SearchIcon, SlidersHorizontal, MapPin, Clock, Heart } from "lucide-react";
+import { Search as SearchIcon, SlidersHorizontal, MapPin, Clock, Heart, Map, Grid, List, Star } from "lucide-react";
 
 function useQuery() {
   const { search } = useLocation();
@@ -48,6 +49,8 @@ const Search = () => {
   
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [selectedProperty, setSelectedProperty] = useState<DemoProperty | undefined>();
 
   // Load recent searches and favorites from localStorage
   useEffect(() => {
@@ -411,31 +414,122 @@ const Search = () => {
 
           {/* Results Header */}
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-semibold">
-              {q ? `Results for "${q}"` : "All PGs"}
-            </h1>
-            <Badge variant="outline">{filtered.length} results</Badge>
-          </div>
-
-          {/* Results Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-            {filtered.map((p, idx) => (
-              <div key={`sr-${idx}`} className="relative">
-                <PropertyCard {...p} />
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-semibold">
+                {q ? `Results for "${q}"` : "All PGs"}
+              </h1>
+              <Badge variant="outline">{filtered.length} results</Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center border rounded-lg">
                 <Button
-                  size="icon"
-                  variant="ghost"
-                  className="absolute top-2 right-2 bg-background/80 hover:bg-background"
-                  onClick={() => toggleFavorite(p.title)}
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="rounded-r-none"
                 >
-                  <Heart 
-                    size={16} 
-                    className={favorites.has(p.title) ? "fill-red-500 text-red-500" : ""} 
-                  />
+                  <List className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'map' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('map')}
+                  className="rounded-l-none"
+                >
+                  <Map className="w-4 h-4" />
                 </Button>
               </div>
-            ))}
+            </div>
           </div>
+
+          {/* Results Content */}
+          {viewMode === 'list' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+              {filtered.map((p, idx) => (
+                <div key={`sr-${idx}`} className="relative">
+                  <PropertyCard {...p} />
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="absolute top-2 right-2 bg-background/80 hover:bg-background"
+                    onClick={() => toggleFavorite(p.title)}
+                  >
+                    <Heart 
+                      size={16} 
+                      className={favorites.has(p.title) ? "fill-red-500 text-red-500" : ""} 
+                    />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Map View */}
+              <Card>
+                <CardContent className="p-0">
+                  <PropertyMapView
+                    properties={filtered}
+                    selectedProperty={selectedProperty}
+                    onPropertySelect={setSelectedProperty}
+                    height="500px"
+                    className="rounded-lg"
+                  />
+                </CardContent>
+              </Card>
+              
+              {/* Selected Property Details */}
+              {selectedProperty && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Selected Property</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <img
+                          src={selectedProperty.image}
+                          alt={selectedProperty.title}
+                          className="w-full h-48 object-cover rounded-lg"
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <h3 className="text-xl font-semibold">{selectedProperty.title}</h3>
+                          <p className="text-gray-600">{selectedProperty.location}</p>
+                          {selectedProperty.fullAddress && (
+                            <p className="text-sm text-gray-500">{selectedProperty.fullAddress}</p>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <span className="text-2xl font-bold text-green-600">{selectedProperty.price}</span>
+                          <div className="flex items-center text-yellow-500">
+                            <Star className="w-4 h-4 fill-current" />
+                            <span className="ml-1">{selectedProperty.rating}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2 text-sm">
+                          <Badge variant="outline">{selectedProperty.roomType}</Badge>
+                          <Badge variant="outline">{selectedProperty.gender}</Badge>
+                          {selectedProperty.verified && (
+                            <Badge variant="secondary">Verified</Badge>
+                          )}
+                        </div>
+                        
+                        <Button 
+                          onClick={() => navigate(`/property/${filtered.indexOf(selectedProperty)}`)}
+                          className="w-full"
+                        >
+                          View Details
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
 
           {filtered.length === 0 && (
             <div className="text-center py-12">

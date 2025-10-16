@@ -26,6 +26,11 @@ export interface DemoProperty {
   hasBalcony?: boolean;
   hasGeyser?: boolean;
   hasRefrigerator?: boolean;
+  // Map-related fields
+  latitude?: number;
+  longitude?: number;
+  fullAddress?: string;
+  isRealPlace?: boolean;
 }
 
 const baseItems: DemoProperty[] = [
@@ -49,6 +54,10 @@ const baseItems: DemoProperty[] = [
     hasBalcony: true,
     hasGeyser: true,
     hasRefrigerator: false,
+    latitude: 12.9352,
+    longitude: 77.6245,
+    fullAddress: "Koramangala 5th Block, Bangalore, Karnataka 560034",
+    isRealPlace: true,
   },
   {
     image: pgSingle,
@@ -70,6 +79,10 @@ const baseItems: DemoProperty[] = [
     hasBalcony: true,
     hasGeyser: true,
     hasRefrigerator: true,
+    latitude: 19.1176,
+    longitude: 72.9060,
+    fullAddress: "Powai, Mumbai, Maharashtra 400076",
+    isRealPlace: true,
   },
   {
     image: pgPremium,
@@ -91,6 +104,10 @@ const baseItems: DemoProperty[] = [
     hasBalcony: true,
     hasGeyser: true,
     hasRefrigerator: true,
+    latitude: 18.5912,
+    longitude: 73.7389,
+    fullAddress: "Hinjewadi, Pune, Maharashtra 411057",
+    isRealPlace: true,
   },
   {
     image: pgCommon,
@@ -112,6 +129,10 @@ const baseItems: DemoProperty[] = [
     hasBalcony: false,
     hasGeyser: true,
     hasRefrigerator: true,
+    latitude: 28.4595,
+    longitude: 77.0266,
+    fullAddress: "Gurgaon, Haryana 122001",
+    isRealPlace: true,
   },
 ];
 
@@ -244,6 +265,48 @@ const indianCities = [
   { city: "Puducherry", state: "Puducherry", localities: ["White Town", "French Quarter", "Mission Street", "MG Road", "Beach Road"] },
 ];
 
+// Real coordinates for major Indian cities
+const cityCoordinates: { [key: string]: { lat: number; lng: number } } = {
+  "Bangalore": { lat: 12.9716, lng: 77.5946 },
+  "Mumbai": { lat: 19.0760, lng: 72.8777 },
+  "Delhi": { lat: 28.7041, lng: 77.1025 },
+  "Pune": { lat: 18.5204, lng: 73.8567 },
+  "Chennai": { lat: 13.0827, lng: 80.2707 },
+  "Hyderabad": { lat: 17.3850, lng: 78.4867 },
+  "Kolkata": { lat: 22.5726, lng: 88.3639 },
+  "Ahmedabad": { lat: 23.0225, lng: 72.5714 },
+  "Jaipur": { lat: 26.9124, lng: 75.7873 },
+  "Gurgaon": { lat: 28.4595, lng: 77.0266 },
+  "Noida": { lat: 28.5355, lng: 77.3910 },
+  "Indore": { lat: 22.7196, lng: 75.8577 },
+  "Lucknow": { lat: 26.8467, lng: 80.9462 },
+  "Kochi": { lat: 9.9312, lng: 76.2673 },
+  "Chandigarh": { lat: 30.7333, lng: 76.7794 },
+  "Bhopal": { lat: 23.2599, lng: 77.4126 },
+  "Visakhapatnam": { lat: 17.6868, lng: 83.2185 },
+  "Bhubaneswar": { lat: 20.2961, lng: 85.8245 },
+  "Ranchi": { lat: 23.3441, lng: 85.3096 },
+  "Guwahati": { lat: 26.1445, lng: 91.7362 },
+  "Patna": { lat: 25.5941, lng: 85.1376 },
+  "Raipur": { lat: 21.2514, lng: 81.6296 },
+  "Shimla": { lat: 31.1048, lng: 77.1734 },
+  "Dehradun": { lat: 30.3165, lng: 78.0322 },
+  "Panaji": { lat: 15.4909, lng: 73.8278 },
+  "Srinagar": { lat: 34.0837, lng: 74.7973 },
+  "Imphal": { lat: 24.8170, lng: 93.9368 },
+  "Shillong": { lat: 25.5788, lng: 91.8933 },
+  "Aizawl": { lat: 23.7271, lng: 92.7176 },
+  "Kohima": { lat: 25.6751, lng: 94.1086 },
+  "Gangtok": { lat: 27.3314, lng: 88.6138 },
+  "Agartala": { lat: 23.8315, lng: 91.2862 },
+  "Itanagar": { lat: 27.0844, lng: 93.6053 },
+  "Port Blair": { lat: 11.6234, lng: 92.7265 },
+  "Kavaratti": { lat: 10.5626, lng: 72.6369 },
+  "Silvassa": { lat: 20.2734, lng: 73.0163 },
+  "Daman": { lat: 20.4283, lng: 72.8397 },
+  "Puducherry": { lat: 11.9139, lng: 79.8145 },
+};
+
 // Generate a large demo dataset by varying titles, locations, prices, and ratings
 export const demoProperties: DemoProperty[] = Array.from({ length: 200 }).map((_, i) => {
   const base = baseItems[i % baseItems.length];
@@ -272,6 +335,11 @@ export const demoProperties: DemoProperty[] = Array.from({ length: 200 }).map((_
     hasRefrigerator: isPremium || (isMidRange && i % 2 === 0),
   };
 
+  // Get coordinates for the city
+  const cityCoords = cityCoordinates[cityData.city];
+  const latitude = cityCoords ? cityCoords.lat + (Math.random() - 0.5) * 0.1 : undefined;
+  const longitude = cityCoords ? cityCoords.lng + (Math.random() - 0.5) * 0.1 : undefined;
+
   return {
     ...base,
     title: `${base.title} #${i + 1}`,
@@ -281,6 +349,10 @@ export const demoProperties: DemoProperty[] = Array.from({ length: 200 }).map((_
     verified,
     foodIncluded,
     ...amenities,
+    latitude,
+    longitude,
+    fullAddress: `${locality}, ${cityData.city}, ${cityData.state}`,
+    isRealPlace: !!cityCoords,
   };
 });
 
