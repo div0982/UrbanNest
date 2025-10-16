@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { DemoProperty } from '@/data/properties';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Home, Star, Wifi, Car, Dumbbell, Shield, ArrowUpDown, Waves, Snowflake } from 'lucide-react';
+import { MapPin, Home, Star, Wifi, Car, Dumbbell, Shield, ArrowUpDown, Waves, Snowflake, ExternalLink } from 'lucide-react';
 
 // Fix for default markers in React Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -131,6 +131,17 @@ const PropertyMap: React.FC<PropertyMapProps> = ({
     if (property.hasElevator) amenities.push('Elevator');
     if (property.hasAC) amenities.push('AC');
     return amenities;
+  };
+
+  const openInGoogleMaps = () => {
+    if (filteredProperties.length > 0) {
+      // Use the first property's coordinates as the center
+      const firstProperty = filteredProperties[0];
+      if (firstProperty.latitude && firstProperty.longitude) {
+        const googleMapsUrl = `https://www.google.com/maps?q=${firstProperty.latitude},${firstProperty.longitude}`;
+        window.open(googleMapsUrl, '_blank');
+      }
+    }
   };
 
   return (
@@ -260,6 +271,19 @@ const PropertyMap: React.FC<PropertyMapProps> = ({
         <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm shadow-lg">
           {filteredProperties.length} properties
         </Badge>
+      </div>
+
+      {/* Google Maps Button */}
+      <div className="absolute bottom-4 right-4 z-[1000]">
+        <Button
+          variant="default"
+          size="sm"
+          onClick={openInGoogleMaps}
+          className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
+        >
+          <ExternalLink className="w-4 h-4 mr-2" />
+          Open in Google Maps
+        </Button>
       </div>
     </div>
   );
