@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, MapPin, Home, Users, IndianRupee, Shield, Camera } from "lucide-react";
+import { Upload, MapPin, Home, Users, IndianRupee, Shield, Camera, X } from "lucide-react";
 import { PropertyService } from "@/services/propertyService";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -22,6 +22,7 @@ const ListPG = () => {
   const { currentUser } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [formData, setFormData] = useState({
     // Basic Details
     pgName: "",
@@ -100,6 +101,49 @@ const ListPG = () => {
     }));
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    // Validate file types and sizes
+    const validFiles = files.filter(file => {
+      const isValidType = file.type.startsWith('image/');
+      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
+      
+      if (!isValidType) {
+        toast({
+          title: "Invalid File Type",
+          description: `${file.name} is not a valid image file. Please select JPG or PNG files.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      if (!isValidSize) {
+        toast({
+          title: "File Too Large",
+          description: `${file.name} is larger than 5MB. Please select a smaller file.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      return true;
+    });
+    
+    setSelectedFiles(prev => [...prev, ...validFiles]);
+    
+    if (validFiles.length > 0) {
+      toast({
+        title: "Files Selected",
+        description: `${validFiles.length} file(s) selected successfully.`,
+      });
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -117,6 +161,16 @@ const ListPG = () => {
       toast({
         title: "Missing Information",
         description: "Please fill all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check minimum photos requirement
+    if (selectedFiles.length < 5) {
+      toast({
+        title: "Insufficient Photos",
+        description: "Please upload at least 5 photos of your property",
         variant: "destructive",
       });
       return;
@@ -174,6 +228,33 @@ const ListPG = () => {
       const propertyId = await PropertyService.createProperty(propertyData);
       
       console.log("Property created successfully:", propertyId);
+      
+      // Upload images if any are selected
+      if (selectedFiles.length > 0) {
+        try {
+          const imageUrls: string[] = [];
+          
+          for (let i = 0; i < selectedFiles.length; i++) {
+            const imageUrl = await PropertyService.uploadPropertyImage(selectedFiles[i], propertyId);
+            imageUrls.push(imageUrl);
+          }
+          
+          // Update property with image URLs
+          await PropertyService.updateProperty(propertyId, { 
+            images: imageUrls,
+            image: imageUrls[0] // Set first image as main image
+          });
+          
+          console.log("Images uploaded successfully:", imageUrls.length);
+        } catch (imageError) {
+          console.error("Error uploading images:", imageError);
+          toast({
+            title: "Image Upload Failed",
+            description: "Property was created but some images failed to upload. You can add images later.",
+            variant: "destructive",
+          });
+        }
+      }
       
       toast({
         title: "Success!",
@@ -669,7 +750,20 @@ const ListPG = () => {
                         <p className="text-sm text-muted-foreground mb-2">
                           Upload property photos (minimum 5 photos)
                         </p>
-                        <Button type="button" variant="outline" size="sm">
+                        <input
+                          type="file"
+                          id="file-upload"
+                          multiple
+                          accept="image/*"
+                          onChange={handleFileSelect}
+                          className="hidden"
+                        />
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => document.getElementById('file-upload')?.click()}
+                        >
                           <Upload className="mr-2" size={16} />
                           Choose Files
                         </Button>
@@ -677,6 +771,40 @@ const ListPG = () => {
                       <p className="text-xs text-muted-foreground">
                         JPG, PNG up to 5MB each. Include room photos, common areas, and exterior.
                       </p>
+                      
+                      {/* File Preview Section */}
+                      {selectedFiles.length > 0 && (
+                        <div className="mt-4">
+                          <p className="text-sm font-medium mb-2">
+                            Selected Files ({selectedFiles.length}):
+                          </p>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            {selectedFiles.map((file, index) => (
+                              <div key={index} className="relative border rounded-lg p-2">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-medium truncate">
+                                      {file.name}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                                    </p>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeFile(index)}
+                                    className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                                  >
+                                    <X size={14} />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
