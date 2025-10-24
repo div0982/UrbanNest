@@ -5,21 +5,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "location",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "price",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "properties",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "verified",
+          "fieldPath": "status",
           "order": "ASCENDING"
         },
         {
@@ -29,11 +15,11 @@
       ]
     },
     {
-      "collectionGroup": "bookings",
+      "collectionGroup": "properties",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "userId",
+          "fieldPath": "ownerId",
           "order": "ASCENDING"
         },
         {

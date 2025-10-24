@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import RoleManagement from "@/components/RoleManagement";
+import PropertyReviewModal from "@/components/PropertyReviewModal";
+import { PropertyService, Property } from "@/services/propertyService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,57 +41,128 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [searchQuery, setSearchQuery] = useState("");
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
-  // Mock data for admin dashboard
+  // Load properties from Firebase
+  useEffect(() => {
+    const loadProperties = async () => {
+      try {
+        setLoading(true);
+        // Get all properties for admin view
+        const allProperties = await PropertyService.getPropertiesForAdmin();
+        setProperties(allProperties);
+      } catch (err) {
+        console.error("Error loading properties:", err);
+        setError("Failed to load properties");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProperties();
+  }, []);
+
+  // Calculate stats from real data
   const adminStats = {
-    totalUsers: 15420,
-    totalProperties: 2847,
-    pendingApprovals: 23,
-    activeOwners: 1240,
-    totalRevenue: 12500000,
-    monthlyGrowth: 15.2,
-    avgRating: 4.6,
-    complaints: 8
+    totalUsers: 15420, // This would need user management to be implemented
+    totalProperties: (properties || []).length,
+    pendingApprovals: (properties || []).filter(p => p.status === 'pending').length,
+    activeOwners: new Set((properties || []).map(p => p.ownerId).filter(Boolean)).size,
+    totalRevenue: 12500000, // This would need payment tracking
+    monthlyGrowth: 15.2, // This would need historical data
+    avgRating: (properties || []).length > 0 ? (properties || []).reduce((sum, p) => sum + (p.rating || 0), 0) / (properties || []).length : 0,
+    complaints: 8 // This would need complaint system
   };
 
-  const pendingProperties = [
-    {
-      id: 1,
-      name: "Royal PG Residency",
-      owner: "Rajesh Kumar",
-      location: "Koramangala, Bangalore",
-      submittedDate: "2024-01-15",
-      status: "pending",
-      rooms: 12,
-      price: 8500,
-      documents: "complete",
-      verification: "pending"
-    },
-    {
-      id: 2,
-      name: "Green Valley Co-living",
-      owner: "Priya Sharma",
-      location: "Powai, Mumbai",
-      submittedDate: "2024-01-14",
-      status: "pending",
-      rooms: 8,
-      price: 12000,
-      documents: "incomplete",
-      verification: "pending"
-    },
-    {
-      id: 3,
-      name: "Elite Heights Premium",
-      owner: "Amit Singh",
-      location: "Hinjewadi, Pune",
-      submittedDate: "2024-01-13",
-      status: "pending",
-      rooms: 15,
-      price: 15500,
-      documents: "complete",
-      verification: "pending"
+  // Filter properties based on search
+  const filteredProperties = (properties || []).filter(property => 
+    (property.pgName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+    (property.ownerName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+    (property.city?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+    (property.locality?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+  );
+
+  // Get pending properties for review
+  const pendingProperties = filteredProperties.filter(p => p.status === 'pending');
+
+  // Handle admin actions
+  const handleApproveProperty = async (propertyId: string) => {
+    try {
+      setIsActionLoading(true);
+      console.log('=== APPROVAL DEBUG ===');
+      console.log('Approving property ID:', propertyId);
+      
+      await PropertyService.updateProperty(propertyId, { 
+        status: 'approved',
+        verified: true 
+      });
+      
+      console.log('Property approved successfully');
+      
+      // Reload properties
+      const updatedProperties = await PropertyService.getPropertiesForAdmin();
+      console.log('Updated properties after approval:', updatedProperties.length);
+      console.log('Approved properties:', updatedProperties.filter(p => p.status === 'approved').length);
+      
+      setProperties(updatedProperties);
+      setIsReviewModalOpen(false);
+      setSelectedProperty(null);
+      
+      // Show success notification
+      alert(`Property "${updatedProperties.find(p => p.id === propertyId)?.pgName}" has been approved and is now visible in search!`);
+      
+      console.log('=== END APPROVAL DEBUG ===');
+    } catch (error) {
+      console.error("Error approving property:", error);
+    } finally {
+      setIsActionLoading(false);
     }
-  ];
+  };
+
+  const handleRejectProperty = async (propertyId: string) => {
+    try {
+      setIsActionLoading(true);
+      await PropertyService.updateProperty(propertyId, { 
+        status: 'rejected' 
+      });
+      // Reload properties
+      const updatedProperties = await PropertyService.getPropertiesForAdmin();
+      setProperties(updatedProperties);
+      setIsReviewModalOpen(false);
+      setSelectedProperty(null);
+    } catch (error) {
+      console.error("Error rejecting property:", error);
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleReviewProperty = (property: Property) => {
+    setSelectedProperty(property);
+    setIsReviewModalOpen(true);
+  };
+
+  const handleDeleteProperty = async (propertyId: string) => {
+    if (window.confirm('Are you sure you want to delete this property? This action cannot be undone.')) {
+      try {
+        setIsActionLoading(true);
+        await PropertyService.deleteProperty(propertyId);
+        // Reload properties
+        const updatedProperties = await PropertyService.getPropertiesForAdmin();
+        setProperties(updatedProperties);
+      } catch (error) {
+        console.error("Error deleting property:", error);
+        alert('Failed to delete property. Please try again.');
+      } finally {
+        setIsActionLoading(false);
+      }
+    }
+  };
 
   const recentUsers = [
     {
@@ -299,32 +372,66 @@ const AdminDashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {pendingProperties.slice(0, 3).map((property) => (
-                        <div key={property.id} className="flex items-center justify-between p-4 rounded-xl border">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="font-semibold">{property.name}</h4>
-                              <Badge className={`${getStatusColor(property.status)} text-white text-xs`}>
-                                {property.status}
-                              </Badge>
+                      {loading ? (
+                        <div className="text-center py-4">Loading properties...</div>
+                      ) : error ? (
+                        <div className="text-center py-4 text-red-500">{error}</div>
+                      ) : pendingProperties.length === 0 ? (
+                        <div className="text-center py-4 text-muted-foreground">No pending properties</div>
+                      ) : (
+                        pendingProperties.slice(0, 3).map((property) => (
+                          <div key={property.id} className="flex items-center justify-between p-4 rounded-xl border">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-semibold">{property.pgName || 'Unnamed Property'}</h4>
+                                <Badge className={`${getStatusColor(property.status)} text-white text-xs`}>
+                                  {property.status}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">{property.ownerName || 'Unknown Owner'}</p>
+                              <p className="text-sm text-muted-foreground">{property.locality || 'Unknown'}, {property.city || 'Unknown'}</p>
+                              <p className="text-xs text-muted-foreground">Submitted: {property.createdAt?.toDate?.()?.toLocaleDateString() || 'Unknown'}</p>
                             </div>
-                            <p className="text-sm text-muted-foreground">{property.owner}</p>
-                            <p className="text-sm text-muted-foreground">{property.location}</p>
-                            <p className="text-xs text-muted-foreground">Submitted: {property.submittedDate}</p>
+                            <div className="flex gap-2">
+                              <Button 
+                                size="sm" 
+                                className="rounded-lg"
+                                onClick={() => handleApproveProperty(property.id!)}
+                                disabled={isActionLoading}
+                              >
+                                <Check size={14} />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="rounded-lg"
+                                onClick={() => handleReviewProperty(property)}
+                                disabled={isActionLoading}
+                              >
+                                <Eye size={14} />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive" 
+                                className="rounded-lg"
+                                onClick={() => handleRejectProperty(property.id!)}
+                                disabled={isActionLoading}
+                              >
+                                <XCircle size={14} />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => handleDeleteProperty(property.id!)}
+                                disabled={isActionLoading}
+                              >
+                                <Trash2 size={14} />
+                              </Button>
+                            </div>
                           </div>
-                          <div className="flex gap-2">
-                            <Button size="sm" className="rounded-lg">
-                              <Check size={14} />
-                            </Button>
-                            <Button size="sm" variant="outline" className="rounded-lg">
-                              <Eye size={14} />
-                            </Button>
-                            <Button size="sm" variant="destructive" className="rounded-lg">
-                              <XCircle size={14} />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
+                        ))
+                      )}
                     </div>
                     <Button variant="outline" className="w-full mt-4 rounded-xl">
                       View All Pending
@@ -396,75 +503,108 @@ const AdminDashboard = () => {
               </div>
 
               <div className="grid gap-6">
-                {pendingProperties.map((property) => (
-                  <Card key={property.id} className="rounded-2xl">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col md:flex-row gap-6">
-                        <div className="w-full md:w-48 h-32 bg-muted rounded-xl flex items-center justify-center">
-                          <Home size={40} className="text-muted-foreground" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between mb-4">
-                            <div>
-                              <h3 className="text-xl font-semibold mb-1">{property.name}</h3>
-                              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                <MapPin size={14} />
-                                <span>{property.location}</span>
+                {loading ? (
+                  <div className="text-center py-8">Loading properties...</div>
+                ) : error ? (
+                  <div className="text-center py-8 text-red-500">{error}</div>
+                ) : filteredProperties.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">No properties found</div>
+                ) : (
+                  filteredProperties.map((property) => (
+                    <Card key={property.id} className="rounded-2xl">
+                      <CardContent className="p-6">
+                        <div className="flex flex-col md:flex-row gap-6">
+                          <div className="w-full md:w-48 h-32 bg-muted rounded-xl flex items-center justify-center">
+                            <Home size={40} className="text-muted-foreground" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-4">
+                              <div>
+                                <h3 className="text-xl font-semibold mb-1">{property.pgName || 'Unnamed Property'}</h3>
+                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                  <MapPin size={14} />
+                                  <span>{property.locality || 'Unknown'}, {property.city || 'Unknown'}</span>
+                                </div>
+                                <p className="text-sm text-muted-foreground">Owner: {property.ownerName || 'Unknown Owner'}</p>
                               </div>
-                              <p className="text-sm text-muted-foreground">Owner: {property.owner}</p>
+                              <div className="flex flex-col gap-2">
+                                <Badge className={`${getStatusColor(property.status)} text-white`}>
+                                  {property.status}
+                                </Badge>
+                                <Badge className={`${getStatusColor(property.verified ? 'complete' : 'incomplete')} text-white`}>
+                                  {property.verified ? 'verified' : 'unverified'}
+                                </Badge>
+                              </div>
                             </div>
-                            <div className="flex flex-col gap-2">
-                              <Badge className={`${getStatusColor(property.status)} text-white`}>
-                                {property.status}
-                              </Badge>
-                              <Badge className={`${getStatusColor(property.documents)} text-white`}>
-                                {property.documents}
-                              </Badge>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                              <div className="text-center">
+                                <p className="text-sm text-muted-foreground">Total Rooms</p>
+                                <p className="font-semibold">{(property.singleRooms || 0) + (property.doubleRooms || 0) + (property.tripleRooms || 0)}</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-sm text-muted-foreground">Starting Price</p>
+                                <p className="font-semibold">₹{Math.min(
+                                  property.singlePrice || Infinity,
+                                  property.doublePrice || Infinity,
+                                  property.triplePrice || Infinity
+                                ) === Infinity ? 'N/A' : Math.min(
+                                  property.singlePrice || Infinity,
+                                  property.doublePrice || Infinity,
+                                  property.triplePrice || Infinity
+                                ).toLocaleString()}</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-sm text-muted-foreground">Submitted</p>
+                                <p className="font-semibold text-xs">{property.createdAt?.toDate?.()?.toLocaleDateString() || 'Unknown'}</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-sm text-muted-foreground">Gender</p>
+                                <p className="font-semibold text-xs">{property.genderPreference || 'Unknown'}</p>
+                              </div>
                             </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                            <div className="text-center">
-                              <p className="text-sm text-muted-foreground">Rooms</p>
-                              <p className="font-semibold">{property.rooms}</p>
-                            </div>
-                            <div className="text-center">
-                              <p className="text-sm text-muted-foreground">Price</p>
-                              <p className="font-semibold">₹{property.price.toLocaleString()}</p>
-                            </div>
-                            <div className="text-center">
-                              <p className="text-sm text-muted-foreground">Submitted</p>
-                              <p className="font-semibold text-xs">{property.submittedDate}</p>
-                            </div>
-                            <div className="text-center">
-                              <p className="text-sm text-muted-foreground">Verification</p>
-                              <p className="font-semibold text-xs">{property.verification}</p>
-                            </div>
-                          </div>
 
-                          <div className="flex gap-2">
-                            <Button size="sm" className="rounded-lg">
-                              <Check size={14} className="mr-1" />
-                              Approve
-                            </Button>
-                            <Button size="sm" variant="outline" className="rounded-lg">
-                              <Eye size={14} className="mr-1" />
-                              Review
-                            </Button>
-                            <Button size="sm" variant="outline" className="rounded-lg">
-                              <Edit size={14} className="mr-1" />
-                              Edit
-                            </Button>
-                            <Button size="sm" variant="destructive" className="rounded-lg">
-                              <XCircle size={14} className="mr-1" />
-                              Reject
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button 
+                                size="sm" 
+                                className="rounded-lg"
+                                onClick={() => handleApproveProperty(property.id!)}
+                                disabled={isActionLoading}
+                              >
+                                <Check size={14} className="mr-1" />
+                                Approve
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="rounded-lg"
+                                onClick={() => handleReviewProperty(property)}
+                                disabled={isActionLoading}
+                              >
+                                <Eye size={14} className="mr-1" />
+                                Review
+                              </Button>
+                              <Button size="sm" variant="outline" className="rounded-lg">
+                                <Edit size={14} className="mr-1" />
+                                Edit
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => handleDeleteProperty(property.id!)}
+                                disabled={isActionLoading}
+                              >
+                                <Trash2 size={14} className="mr-1" />
+                                Delete
+                              </Button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
               </div>
             </TabsContent>
 
@@ -614,6 +754,20 @@ const AdminDashboard = () => {
 
       <Footer />
       <BottomNav />
+
+      {/* Property Review Modal */}
+      <PropertyReviewModal
+        property={selectedProperty}
+        isOpen={isReviewModalOpen}
+        onClose={() => {
+          setIsReviewModalOpen(false);
+          setSelectedProperty(null);
+        }}
+        onApprove={handleApproveProperty}
+        onReject={handleRejectProperty}
+        onDelete={handleDeleteProperty}
+        isLoading={isActionLoading}
+      />
     </div>
   );
 };

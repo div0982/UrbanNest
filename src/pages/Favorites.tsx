@@ -8,32 +8,108 @@ import { demoProperties } from "@/data/properties";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Search } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import FavoritesService, { Favorite } from "@/services/favoritesService";
+import { PropertyService } from "@/services/propertyService";
 
 const Favorites = () => {
   const navigate = useNavigate();
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [favoriteProperties, setFavoriteProperties] = useState(demoProperties.slice(0, 0));
+  const { currentUser } = useAuth();
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
+  const [favoriteProperties, setFavoriteProperties] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const favs = localStorage.getItem("favorites");
-    if (favs) {
-      const favSet = new Set(JSON.parse(favs));
-      setFavorites(favSet);
-      
-      // Filter properties that are in favorites
-      const favProps = demoProperties.filter(p => favSet.has(p.title));
-      setFavoriteProperties(favProps);
-    }
-  }, []);
+    const loadFavorites = async () => {
+      if (!currentUser) {
+        setError("Please log in to view your favorites");
+        setLoading(false);
+        return;
+      }
 
-  const removeFavorite = (title: string) => {
-    const newFavorites = new Set(favorites);
-    newFavorites.delete(title);
-    setFavorites(newFavorites);
-    localStorage.setItem("favorites", JSON.stringify([...newFavorites]));
-    
-    // Update favorite properties
-    setFavoriteProperties(prev => prev.filter(p => p.title !== title));
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Get user's favorites from Firebase
+        const userFavorites = await FavoritesService.getUserFavorites(currentUser.uid);
+        setFavorites(userFavorites);
+        
+        // Get full property details for each favorite
+        const propertyPromises = userFavorites.map(async (favorite) => {
+          try {
+            const property = await PropertyService.getPropertyById(favorite.propertyId);
+            return property;
+          } catch (error) {
+            console.error(`Error loading property ${favorite.propertyId}:`, error);
+            // Return a fallback property object
+            return {
+              id: favorite.propertyId,
+              pgName: favorite.propertyName,
+              image: favorite.propertyImage,
+              singlePrice: favorite.propertyPrice,
+              location: favorite.propertyLocation,
+              // Add other required fields with defaults
+              propertyType: "apartment" as const,
+              address: "",
+              city: "",
+              locality: "",
+              pincode: "",
+              singleRooms: 0,
+              doubleRooms: 0,
+              tripleRooms: 0,
+              doublePrice: 0,
+              triplePrice: 0,
+              amenities: [],
+              genderPreference: "coliving" as const,
+              foodIncluded: false,
+              foodType: "veg" as const,
+              gateClosingTime: "",
+              smokingAllowed: false,
+              drinkingAllowed: false,
+              guestsAllowed: false,
+              ownerName: "",
+              ownerPhone: "",
+              ownerEmail: "",
+              ownerId: "",
+              aadhar: "",
+              pan: "",
+              status: "approved" as const,
+              verified: true,
+              rating: 4.5,
+              createdAt: new Date() as any,
+              updatedAt: new Date() as any,
+            };
+          }
+        });
+        
+        const properties = await Promise.all(propertyPromises);
+        setFavoriteProperties(properties.filter(Boolean));
+        
+      } catch (error) {
+        console.error('Error loading favorites:', error);
+        setError("Failed to load favorites");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadFavorites();
+  }, [currentUser]);
+
+  const removeFavorite = async (propertyId: string) => {
+    if (!currentUser) return;
+
+    try {
+      await FavoritesService.removeFromFavorites(currentUser.uid, propertyId);
+      
+      // Update local state
+      setFavorites(prev => prev.filter(fav => fav.propertyId !== propertyId));
+      setFavoriteProperties(prev => prev.filter(prop => prop.id !== propertyId));
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+    }
   };
 
   return (
@@ -54,19 +130,20 @@ const Favorites = () => {
             </Badge>
           </div>
 
-          {favoriteProperties.length > 0 ? (
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="text-lg">Loading your favorites...</div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <div className="text-lg text-red-600 mb-4">{error}</div>
+              <Button onClick={() => navigate("/login")}>Login to View Favorites</Button>
+            </div>
+          ) : favoriteProperties.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {favoriteProperties.map((property, index) => (
-                <div key={index} className="relative">
-                  <PropertyCard {...property} />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="absolute top-2 right-2 bg-background/80 hover:bg-background"
-                    onClick={() => removeFavorite(property.title)}
-                  >
-                    <Heart size={16} className="fill-red-500 text-red-500" />
-                  </Button>
+                <div key={property.id || index} className="relative">
+                  <PropertyCard property={property} />
                 </div>
               ))}
             </div>

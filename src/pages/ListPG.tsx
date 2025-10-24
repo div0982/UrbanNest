@@ -13,11 +13,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, MapPin, Home, Users, IndianRupee, Shield, Camera } from "lucide-react";
+import { PropertyService } from "@/services/propertyService";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ListPG = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { currentUser } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     // Basic Details
     pgName: "",
@@ -31,12 +35,12 @@ const ListPG = () => {
     pincode: "",
     
     // Room Details
-    singleRooms: "",
-    singlePrice: "",
-    doubleRooms: "",
-    doublePrice: "",
-    tripleRooms: "",
-    triplePrice: "",
+    singleRooms: 0,
+    singlePrice: 0,
+    doubleRooms: 0,
+    doublePrice: 0,
+    tripleRooms: 0,
+    triplePrice: 0,
     
     // Amenities
     amenities: [] as string[],
@@ -79,7 +83,7 @@ const ListPG = () => {
     "Nashik", "Faridabad", "Meerut", "Rajkot", "Kalyan",
     "Vasai-Virar", "Varanasi", "Srinagar", "Aurangabad",
     "Navi Mumbai", "Solapur", "Vijayawada", "Kolhapur",
-    "Amritsar", "Noida", "Ranchi", "Howrah", "Coimbatore",
+    "Amritsar", "Ranchi", "Howrah", "Coimbatore",
     "Raipur", "Jabalpur", "Gwalior", "Chandigarh", "Tiruchirappalli"
   ];
 
@@ -96,8 +100,17 @@ const ListPG = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!currentUser) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to list your PG",
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Basic validation
     if (!formData.pgName || !formData.address || !formData.city) {
@@ -109,13 +122,76 @@ const ListPG = () => {
       return;
     }
 
-    console.log("Form submitted:", formData);
-    toast({
-      title: "Success!",
-      description: "Your PG listing has been submitted for review. We'll get back to you within 24 hours.",
-    });
+    setIsSubmitting(true);
     
-    setTimeout(() => navigate("/"), 2000);
+    try {
+      // Prepare property data for Firebase
+      const propertyData = {
+        pgName: formData.pgName,
+        description: formData.description,
+        propertyType: formData.propertyType as 'independent' | 'apartment' | 'villa' | 'hostel',
+        
+        // Location
+        address: formData.address,
+        city: formData.city,
+        locality: formData.locality,
+        pincode: formData.pincode,
+        fullAddress: `${formData.address}, ${formData.locality}, ${formData.city} - ${formData.pincode}`,
+        
+        // Room Details
+        singleRooms: formData.singleRooms,
+        singlePrice: formData.singlePrice,
+        doubleRooms: formData.doubleRooms,
+        doublePrice: formData.doublePrice,
+        tripleRooms: formData.tripleRooms,
+        triplePrice: formData.triplePrice,
+        
+        // Amenities
+        amenities: formData.amenities,
+        
+        // Preferences
+        genderPreference: formData.genderPreference as 'male' | 'female' | 'coliving',
+        foodIncluded: formData.foodIncluded,
+        foodType: formData.foodType as 'veg' | 'nonveg' | 'both' | undefined,
+        
+        // Rules
+        gateClosingTime: formData.gateClosingTime,
+        smokingAllowed: formData.smokingAllowed,
+        drinkingAllowed: formData.drinkingAllowed,
+        guestsAllowed: formData.guestsAllowed,
+        
+        // Owner Details
+        ownerName: formData.ownerName,
+        ownerPhone: formData.ownerPhone,
+        ownerEmail: formData.ownerEmail,
+        ownerId: currentUser.uid,
+        
+        // KYC
+        aadhar: formData.aadhar,
+        pan: formData.pan,
+      };
+
+      const propertyId = await PropertyService.createProperty(propertyData);
+      
+      console.log("Property created successfully:", propertyId);
+      
+      toast({
+        title: "Success!",
+        description: "Your PG listing has been submitted for review. We'll get back to you within 24 hours.",
+      });
+      
+      setTimeout(() => navigate("/"), 2000);
+      
+    } catch (error) {
+      console.error("Error creating property:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit your PG listing. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const nextStep = () => {
@@ -293,7 +369,7 @@ const ListPG = () => {
                           type="number"
                           placeholder="0"
                           value={formData.singleRooms}
-                          onChange={(e) => handleInputChange("singleRooms", e.target.value)}
+                          onChange={(e) => handleInputChange("singleRooms", parseInt(e.target.value) || 0)}
                           min="0"
                         />
                       </div>
@@ -304,7 +380,7 @@ const ListPG = () => {
                           type="number"
                           placeholder="10000"
                           value={formData.singlePrice}
-                          onChange={(e) => handleInputChange("singlePrice", e.target.value)}
+                          onChange={(e) => handleInputChange("singlePrice", parseInt(e.target.value) || 0)}
                           min="0"
                         />
                       </div>
@@ -322,7 +398,7 @@ const ListPG = () => {
                           type="number"
                           placeholder="0"
                           value={formData.doubleRooms}
-                          onChange={(e) => handleInputChange("doubleRooms", e.target.value)}
+                          onChange={(e) => handleInputChange("doubleRooms", parseInt(e.target.value) || 0)}
                           min="0"
                         />
                       </div>
@@ -333,7 +409,7 @@ const ListPG = () => {
                           type="number"
                           placeholder="7000"
                           value={formData.doublePrice}
-                          onChange={(e) => handleInputChange("doublePrice", e.target.value)}
+                          onChange={(e) => handleInputChange("doublePrice", parseInt(e.target.value) || 0)}
                           min="0"
                         />
                       </div>
@@ -351,7 +427,7 @@ const ListPG = () => {
                           type="number"
                           placeholder="0"
                           value={formData.tripleRooms}
-                          onChange={(e) => handleInputChange("tripleRooms", e.target.value)}
+                          onChange={(e) => handleInputChange("tripleRooms", parseInt(e.target.value) || 0)}
                           min="0"
                         />
                       </div>
@@ -362,7 +438,7 @@ const ListPG = () => {
                           type="number"
                           placeholder="5500"
                           value={formData.triplePrice}
-                          onChange={(e) => handleInputChange("triplePrice", e.target.value)}
+                          onChange={(e) => handleInputChange("triplePrice", parseInt(e.target.value) || 0)}
                           min="0"
                         />
                       </div>
@@ -621,8 +697,8 @@ const ListPG = () => {
                     Next Step
                   </Button>
                 ) : (
-                  <Button type="submit" variant="hero">
-                    Submit for Review
+                  <Button type="submit" variant="hero" disabled={isSubmitting}>
+                    {isSubmitting ? "Submitting..." : "Submit for Review"}
                   </Button>
                 )}
               </div>

@@ -1,6 +1,28 @@
 import { Home, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const { currentUser, userRoles } = useAuth();
+
+  const handleListPropertyClick = () => {
+    // Check if user is signed in
+    if (!currentUser) {
+      // Not signed in - redirect to login
+      navigate("/login");
+      return;
+    }
+
+    // Check if user has owner or admin role
+    if (userRoles.isOwner || userRoles.isAdmin) {
+      // User is owner/admin - go to list property page
+      navigate("/list-pg");
+    } else {
+      // User is signed in but not owner/admin - redirect to get-started
+      navigate("/learn-more");
+    }
+  };
   return (
     <footer className="bg-foreground text-background py-12">
       <div className="container mx-auto px-4">
@@ -48,7 +70,7 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">For PG Owners</h4>
             <ul className="space-y-2 text-sm text-background/70">
-              <li><a href="#" className="hover:text-primary transition-colors">List Your Property</a></li>
+              <li><button onClick={handleListPropertyClick} className="hover:text-primary transition-colors text-left">List Your Property</button></li>
               <li><a href="#" className="hover:text-primary transition-colors">Owner Dashboard</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">Pricing</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">Success Stories</a></li>

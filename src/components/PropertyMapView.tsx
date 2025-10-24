@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { DemoProperty } from '@/data/properties';
+import { Property } from '@/services/propertyService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -47,17 +47,23 @@ const premiumIcon = createCustomIcon('#4caf50', '⭐');
 const sharedIcon = createCustomIcon('#2196f3', '👥');
 const singleIcon = createCustomIcon('#9c27b0', '👤');
 
-const getMarkerIcon = (property: DemoProperty) => {
-  if (property.roomType === 'Premium') return premiumIcon;
-  if (property.roomType === 'Shared') return sharedIcon;
-  if (property.roomType === 'Single') return singleIcon;
-  return homeIcon;
+const getMarkerIcon = (property: Property) => {
+  // Determine icon based on room types available
+  if (property.singleRooms > 0 && property.doubleRooms === 0 && property.tripleRooms === 0) {
+    return singleIcon;
+  } else if (property.singleRooms > 0 && (property.doubleRooms > 0 || property.tripleRooms > 0)) {
+    return premiumIcon;
+  } else if (property.doubleRooms > 0 || property.tripleRooms > 0) {
+    return sharedIcon;
+  } else {
+    return homeIcon;
+  }
 };
 
 interface PropertyMapViewProps {
-  properties: DemoProperty[];
-  selectedProperty?: DemoProperty;
-  onPropertySelect?: (property: DemoProperty) => void;
+  properties: Property[];
+  selectedProperty?: Property;
+  onPropertySelect?: (property: Property) => void;
   height?: string;
   className?: string;
   showFullscreen?: boolean;

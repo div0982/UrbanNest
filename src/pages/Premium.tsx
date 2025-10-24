@@ -152,7 +152,7 @@ const PremiumPage = () => {
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {premiumProperties.slice(0, 8).map((property, index) => (
-                <PropertyCard key={index} {...property} />
+                <PropertyCard key={index} property={property} />
               ))}
             </div>
           </section>

@@ -13,8 +13,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
-import { demoProperties } from "@/data/properties";
-import { Search as SearchIcon, SlidersHorizontal, MapPin, Clock, Heart, Map, Grid, List, Star } from "lucide-react";
+import { PropertyService, Property, PropertyFilters } from "@/services/propertyService";
+import { Search as SearchIcon, SlidersHorizontal, MapPin, Clock, Map, Grid, List, Star, Loader2, RefreshCw } from "lucide-react";
 
 function useQuery() {
   const { search } = useLocation();
@@ -25,6 +25,126 @@ const Search = () => {
   const navigate = useNavigate();
   const queryParams = useQuery();
   const q = (queryParams.get("q") || "").trim();
+  
+  // State for Firebase data
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Dummy data for map visualization
+  const dummyProperties = [
+    {
+      id: "dummy-1",
+      pgName: "Sunshine Residency",
+      locality: "Koramangala",
+      city: "Bangalore",
+      singlePrice: 8500,
+      doublePrice: 0,
+      triplePrice: 0,
+      singleRooms: 4,
+      doubleRooms: 0,
+      tripleRooms: 0,
+      genderPreference: "male" as const,
+      foodIncluded: true,
+      verified: true,
+      rating: 4.7,
+      amenities: ["WiFi", "AC", "Parking"],
+      latitude: 12.9352,
+      longitude: 77.6245,
+      status: "approved" as const,
+      ownerName: "Rajesh Kumar",
+      ownerPhone: "+91-9876543210",
+      ownerEmail: "rajesh@sunshine.com",
+      ownerId: "dummy-owner-1",
+      aadhar: "123456789012",
+      pan: "ABCDE1234F",
+      createdAt: new Date() as any,
+      updatedAt: new Date() as any,
+      propertyType: "hostel" as const,
+      address: "123, 5th Cross, Koramangala",
+      pincode: "560034",
+      description: "A comfortable PG in the heart of Koramangala",
+      gateClosingTime: "11:00 PM",
+      smokingAllowed: false,
+      drinkingAllowed: false,
+      guestsAllowed: false,
+      foodType: "both" as const
+    },
+    {
+      id: "dummy-2", 
+      pgName: "Green Valley PG",
+      locality: "Powai",
+      city: "Mumbai",
+      singlePrice: 12000,
+      doublePrice: 0,
+      triplePrice: 0,
+      singleRooms: 8,
+      doubleRooms: 0,
+      tripleRooms: 0,
+      genderPreference: "female" as const,
+      foodIncluded: true,
+      verified: true,
+      rating: 4.8,
+      amenities: ["WiFi", "AC", "Gym", "Parking"],
+      latitude: 19.1197,
+      longitude: 72.9064,
+      status: "approved" as const,
+      ownerName: "Priya Sharma",
+      ownerPhone: "+91-9876543211",
+      ownerEmail: "priya@greenvalley.com",
+      ownerId: "dummy-owner-2",
+      aadhar: "123456789013",
+      pan: "ABCDE1235F",
+      createdAt: new Date() as any,
+      updatedAt: new Date() as any,
+      propertyType: "apartment" as const,
+      address: "456, Powai Lake Road",
+      pincode: "400076",
+      description: "Premium PG with modern amenities",
+      gateClosingTime: "10:30 PM",
+      smokingAllowed: false,
+      drinkingAllowed: false,
+      guestsAllowed: true,
+      foodType: "veg" as const
+    },
+    {
+      id: "dummy-3",
+      pgName: "Elite Heights Premium",
+      locality: "Hinjewadi",
+      city: "Pune",
+      singlePrice: 0,
+      doublePrice: 15500,
+      triplePrice: 0,
+      singleRooms: 0,
+      doubleRooms: 6,
+      tripleRooms: 0,
+      genderPreference: "coliving" as const,
+      foodIncluded: false,
+      verified: true,
+      rating: 4.9,
+      amenities: ["WiFi", "AC", "Gym", "Swimming Pool", "Parking"],
+      latitude: 18.5912,
+      longitude: 73.7415,
+      status: "approved" as const,
+      ownerName: "Amit Singh",
+      ownerPhone: "+91-9876543212",
+      ownerEmail: "amit@eliteheights.com",
+      ownerId: "dummy-owner-3",
+      aadhar: "123456789014",
+      pan: "ABCDE1236F",
+      createdAt: new Date() as any,
+      updatedAt: new Date() as any,
+      propertyType: "villa" as const,
+      address: "789, Hinjewadi IT Park",
+      pincode: "411057",
+      description: "Luxury co-living space",
+      gateClosingTime: "12:00 AM",
+      smokingAllowed: true,
+      drinkingAllowed: true,
+      guestsAllowed: true,
+      foodType: "both" as const
+    }
+  ];
   
   // Filters state
   const [filters, setFilters] = useState({
@@ -48,17 +168,148 @@ const Search = () => {
   });
   
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const [selectedProperty, setSelectedProperty] = useState<DemoProperty | undefined>();
+  const [selectedProperty, setSelectedProperty] = useState<Property | undefined>();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Load recent searches and favorites from localStorage
+  // Normalize Firebase properties to ensure they have all required fields
+  const normalizeProperty = (property: Property): Property => {
+    return {
+      ...property,
+      // Ensure all required fields have defaults
+      amenities: property.amenities || [],
+      rating: property.rating || 0,
+      verified: property.verified || false,
+      foodIncluded: property.foodIncluded || false,
+      genderPreference: property.genderPreference || 'coliving',
+      singlePrice: property.singlePrice || 0,
+      doublePrice: property.doublePrice || 0,
+      triplePrice: property.triplePrice || 0,
+      singleRooms: property.singleRooms || 0,
+      doubleRooms: property.doubleRooms || 0,
+      tripleRooms: property.tripleRooms || 0,
+      // Add coordinates if missing (use city center as default)
+      latitude: property.latitude || getDefaultLatitude(property.city),
+      longitude: property.longitude || getDefaultLongitude(property.city),
+    };
+  };
+
+  // Helper function to get default coordinates for cities
+  const getDefaultLatitude = (city?: string): number => {
+    const cityCoords: { [key: string]: number } = {
+      'Bangalore': 12.9716,
+      'Mumbai': 19.0760,
+      'Pune': 18.5204,
+      'Delhi': 28.7041,
+      'Chennai': 13.0827,
+      'Hyderabad': 17.3850,
+      'Kolkata': 22.5726,
+    };
+    return cityCoords[city || 'Bangalore'] || 12.9716;
+  };
+
+  const getDefaultLongitude = (city?: string): number => {
+    const cityCoords: { [key: string]: number } = {
+      'Bangalore': 77.5946,
+      'Mumbai': 72.8777,
+      'Pune': 73.8567,
+      'Delhi': 77.1025,
+      'Chennai': 80.2707,
+      'Hyderabad': 78.4867,
+      'Kolkata': 88.3639,
+    };
+    return cityCoords[city || 'Bangalore'] || 77.5946;
+  };
+
+  // Manual refresh function
+  const refreshProperties = async () => {
+    setIsRefreshing(true);
+    try {
+      let fetchedProperties: Property[] = [];
+      
+      if (q) {
+        fetchedProperties = await PropertyService.searchProperties(q);
+      } else {
+        fetchedProperties = await PropertyService.getApprovedProperties();
+      }
+      
+      console.log(`Refreshed: Loaded ${fetchedProperties.length} approved properties from Firebase`);
+      console.log('Refreshed properties:', fetchedProperties.map(p => ({
+        id: p.id,
+        name: p.pgName,
+        status: p.status
+      })));
+      
+      // Normalize Firebase properties to ensure consistent display
+      const normalizedProperties = fetchedProperties.map(normalizeProperty);
+      setProperties(normalizedProperties);
+    } catch (err) {
+      console.error('Error refreshing properties:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Load properties from Firebase
+  useEffect(() => {
+    const loadProperties = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        let fetchedProperties: Property[] = [];
+        
+        if (q) {
+          // Search with query
+          fetchedProperties = await PropertyService.searchProperties(q);
+        } else {
+          // Get only approved properties for public search
+          fetchedProperties = await PropertyService.getApprovedProperties();
+        }
+        
+        // If no Firebase properties found, we still have dummy data to show
+        console.log(`=== SEARCH PAGE DEBUG ===`);
+        console.log(`Loaded ${fetchedProperties.length} approved properties from Firebase`);
+        console.log('Raw Firebase properties:', fetchedProperties.map(p => ({
+          id: p.id,
+          name: p.pgName,
+          status: p.status,
+          verified: p.verified
+        })));
+        
+        // Normalize Firebase properties to ensure consistent display
+        const normalizedProperties = fetchedProperties.map(normalizeProperty);
+        console.log('Normalized properties:', normalizedProperties.map(p => ({
+          id: p.id,
+          name: p.pgName,
+          status: p.status,
+          verified: p.verified
+        })));
+        
+        setProperties(normalizedProperties);
+        console.log('=== END SEARCH PAGE DEBUG ===');
+      } catch (err) {
+        console.error('Error loading properties:', err);
+        // Don't set error state - we have dummy data to show
+        console.log('Using dummy data due to Firebase error');
+        setProperties([]); // Empty array, dummy data will still be shown
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProperties();
+    
+    // Auto-refresh every 30 seconds to catch newly approved properties
+    const refreshInterval = setInterval(loadProperties, 30000);
+    
+    return () => clearInterval(refreshInterval);
+  }, [q]);
+
+  // Load recent searches from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("recentSearches");
     if (saved) setRecentSearches(JSON.parse(saved));
-    
-    const favs = localStorage.getItem("favorites");
-    if (favs) setFavorites(new Set(JSON.parse(favs)));
   }, []);
 
   // Save recent search
@@ -71,63 +322,13 @@ const Search = () => {
   }, [q, recentSearches]);
 
   const filtered = useMemo(() => {
-    let results = demoProperties;
+    console.log('=== FILTERING DEBUG ===');
+    console.log('Properties to filter:', properties.length);
+    console.log('Properties details:', properties.map(p => ({ id: p.id, name: p.pgName })));
     
-    // Text search
-    if (q) {
-      const lower = q.toLowerCase();
-      results = results.filter((p) =>
-        [p.title, p.location, p.roomType, p.gender].some((v) => v.toLowerCase().includes(lower))
-      );
-    }
-    
-    // Apply filters
-    results = results.filter((p) => {
-      const price = parseInt(p.price.replace(/[₹,]/g, ""));
-      if (price < filters.priceRange[0] || price > filters.priceRange[1]) return false;
-      if (filters.gender !== "any" && p.gender !== filters.gender) return false;
-      if (filters.foodIncluded && !p.foodIncluded) return false;
-      if (filters.verified && !p.verified) return false;
-      if (filters.roomType !== "any" && p.roomType !== filters.roomType) return false;
-      
-      // Apply amenity filters
-      if (filters.hasAC && !p.hasAC) return false;
-      if (filters.hasWiFi && !p.hasWiFi) return false;
-      if (filters.hasParking && !p.hasParking) return false;
-      if (filters.hasGym && !p.hasGym) return false;
-      if (filters.hasLaundry && !p.hasLaundry) return false;
-      if (filters.hasSecurity && !p.hasSecurity) return false;
-      if (filters.hasElevator && !p.hasElevator) return false;
-      if (filters.hasBalcony && !p.hasBalcony) return false;
-      if (filters.hasGeyser && !p.hasGeyser) return false;
-      if (filters.hasRefrigerator && !p.hasRefrigerator) return false;
-      
-      return true;
-    });
-    
-    // Sort
-    switch (filters.sortBy) {
-      case "price-low":
-        return results.sort((a, b) => parseInt(a.price.replace(/[₹,]/g, "")) - parseInt(b.price.replace(/[₹,]/g, "")));
-      case "price-high":
-        return results.sort((a, b) => parseInt(b.price.replace(/[₹,]/g, "")) - parseInt(a.price.replace(/[₹,]/g, "")));
-      case "rating":
-        return results.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      default:
-        return results;
-    }
-  }, [q, filters]);
-
-  const toggleFavorite = (title: string) => {
-    const newFavorites = new Set(favorites);
-    if (newFavorites.has(title)) {
-      newFavorites.delete(title);
-    } else {
-      newFavorites.add(title);
-    }
-    setFavorites(newFavorites);
-    localStorage.setItem("favorites", JSON.stringify([...newFavorites]));
-  };
+    // TEMPORARY: Return properties directly without any filtering
+    return properties;
+  }, [properties, filters]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -178,7 +379,7 @@ const Search = () => {
                     <div className="px-1">
                       <Slider
                         value={filters.priceRange}
-                        onValueChange={(value) => setFilters(prev => ({ ...prev, priceRange: value }))}
+                        onValueChange={(value) => setFilters(prev => ({ ...prev, priceRange: value as [number, number] }))}
                         max={25000}
                         min={3000}
                         step={500}
@@ -421,6 +622,16 @@ const Search = () => {
               <Badge variant="outline">{filtered.length} results</Badge>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={refreshProperties}
+                disabled={isRefreshing}
+                className="gap-1"
+              >
+                <RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} />
+                Refresh
+              </Button>
               <div className="flex items-center border rounded-lg">
                 <Button
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -443,23 +654,20 @@ const Search = () => {
           </div>
 
           {/* Results Content */}
-          {viewMode === 'list' ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin mr-2" />
+              <span>Loading properties...</span>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-500 mb-4">{error}</p>
+              <Button onClick={() => window.location.reload()}>Try Again</Button>
+            </div>
+          ) : viewMode === 'list' ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {filtered.map((p, idx) => (
-                <div key={`sr-${idx}`} className="relative">
-                  <PropertyCard {...p} />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="absolute top-2 right-2 bg-background/80 hover:bg-background"
-                    onClick={() => toggleFavorite(p.title)}
-                  >
-                    <Heart 
-                      size={16} 
-                      className={favorites.has(p.title) ? "fill-red-500 text-red-500" : ""} 
-                    />
-                  </Button>
-                </div>
+                <PropertyCard key={`sr-${idx}`} property={p} />
               ))}
             </div>
           ) : (
@@ -487,38 +695,48 @@ const Search = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <img
-                          src={selectedProperty.image}
-                          alt={selectedProperty.title}
+                          src="/placeholder.svg"
+                          alt={selectedProperty.pgName}
                           className="w-full h-48 object-cover rounded-lg"
                         />
                       </div>
                       <div className="space-y-3">
                         <div>
-                          <h3 className="text-xl font-semibold">{selectedProperty.title}</h3>
-                          <p className="text-gray-600">{selectedProperty.location}</p>
+                          <h3 className="text-xl font-semibold">{selectedProperty.pgName}</h3>
+                          <p className="text-gray-600">{selectedProperty.locality}, {selectedProperty.city}</p>
                           {selectedProperty.fullAddress && (
                             <p className="text-sm text-gray-500">{selectedProperty.fullAddress}</p>
                           )}
                         </div>
                         
                         <div className="flex items-center justify-between">
-                          <span className="text-2xl font-bold text-green-600">{selectedProperty.price}</span>
+                          <span className="text-2xl font-bold text-green-600">
+                            ₹{Math.min(
+                              selectedProperty.singlePrice || Infinity,
+                              selectedProperty.doublePrice || Infinity,
+                              selectedProperty.triplePrice || Infinity
+                            ).toLocaleString()}
+                          </span>
                           <div className="flex items-center text-yellow-500">
                             <Star className="w-4 h-4 fill-current" />
-                            <span className="ml-1">{selectedProperty.rating}</span>
+                            <span className="ml-1">{selectedProperty.rating || 'N/A'}</span>
                           </div>
                         </div>
                         
                         <div className="flex items-center space-x-2 text-sm">
-                          <Badge variant="outline">{selectedProperty.roomType}</Badge>
-                          <Badge variant="outline">{selectedProperty.gender}</Badge>
+                          <Badge variant="outline">
+                            {selectedProperty.singleRooms > 0 ? 'Single' : 
+                             selectedProperty.doubleRooms > 0 ? 'Double' : 
+                             selectedProperty.tripleRooms > 0 ? 'Triple' : 'Mixed'}
+                          </Badge>
+                          <Badge variant="outline">{selectedProperty.genderPreference}</Badge>
                           {selectedProperty.verified && (
                             <Badge variant="secondary">Verified</Badge>
                           )}
                         </div>
                         
                         <Button 
-                          onClick={() => navigate(`/property/${filtered.indexOf(selectedProperty)}`)}
+                          onClick={() => navigate(`/property/${selectedProperty.id}`)}
                           className="w-full"
                         >
                           View Details

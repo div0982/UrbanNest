@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
+import { PropertyService, Property } from "@/services/propertyService";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,9 +31,33 @@ import {
 const OwnerDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
+  const { currentUser } = useAuth();
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data for owner's properties
-  const ownerProperties = [
+  // Load owner's properties from Firebase
+  useEffect(() => {
+    const loadProperties = async () => {
+      if (!currentUser) return;
+      
+      try {
+        setLoading(true);
+        const ownerProperties = await PropertyService.getPropertiesByOwner(currentUser.uid);
+        setProperties(ownerProperties);
+      } catch (err) {
+        console.error("Error loading properties:", err);
+        setError("Failed to load properties");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProperties();
+  }, [currentUser]);
+
+  // Mock data for owner's properties (fallback)
+  const mockOwnerProperties = [
     {
       id: 1,
       name: "Sunshine Residency",
