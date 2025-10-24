@@ -179,6 +179,12 @@ const ListPG = () => {
     setIsSubmitting(true);
     
     try {
+      console.log('=== FORM SUBMISSION DEBUG ===');
+      console.log('Form data:', formData);
+      console.log('Selected files:', selectedFiles.length);
+      console.log('Current user:', currentUser?.uid);
+      console.log('=== END FORM SUBMISSION DEBUG ===');
+      
       // Prepare property data for Firebase
       const propertyData = {
         pgName: formData.pgName,
@@ -232,12 +238,20 @@ const ListPG = () => {
       // Upload images if any are selected
       if (selectedFiles.length > 0) {
         try {
+          console.log('=== IMAGE UPLOAD DEBUG ===');
+          console.log('Starting image upload for property:', propertyId);
+          console.log('Number of files to upload:', selectedFiles.length);
+          
           const imageUrls: string[] = [];
           
           for (let i = 0; i < selectedFiles.length; i++) {
+            console.log(`Uploading file ${i + 1}/${selectedFiles.length}:`, selectedFiles[i].name);
             const imageUrl = await PropertyService.uploadPropertyImage(selectedFiles[i], propertyId);
             imageUrls.push(imageUrl);
+            console.log(`File ${i + 1} uploaded successfully:`, imageUrl);
           }
+          
+          console.log('All images uploaded. URLs:', imageUrls);
           
           // Update property with image URLs
           await PropertyService.updateProperty(propertyId, { 
@@ -245,7 +259,8 @@ const ListPG = () => {
             image: imageUrls[0] // Set first image as main image
           });
           
-          console.log("Images uploaded successfully:", imageUrls.length);
+          console.log('Property updated with image URLs');
+          console.log('=== END IMAGE UPLOAD DEBUG ===');
         } catch (imageError) {
           console.error("Error uploading images:", imageError);
           toast({

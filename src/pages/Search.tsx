@@ -174,7 +174,7 @@ const Search = () => {
 
   // Normalize Firebase properties to ensure they have all required fields
   const normalizeProperty = (property: Property): Property => {
-    return {
+    const normalized = {
       ...property,
       // Ensure all required fields have defaults
       amenities: property.amenities || [],
@@ -192,6 +192,17 @@ const Search = () => {
       latitude: property.latitude || getDefaultLatitude(property.city),
       longitude: property.longitude || getDefaultLongitude(property.city),
     };
+    
+    console.log('Normalizing property:', {
+      id: property.id,
+      name: property.pgName,
+      image: property.image,
+      images: property.images,
+      normalizedImage: normalized.image,
+      normalizedImages: normalized.images
+    });
+    
+    return normalized;
   };
 
   // Helper function to get default coordinates for cities
@@ -274,7 +285,9 @@ const Search = () => {
           id: p.id,
           name: p.pgName,
           status: p.status,
-          verified: p.verified
+          verified: p.verified,
+          image: p.image,
+          images: p.images
         })));
         
         // Normalize Firebase properties to ensure consistent display
