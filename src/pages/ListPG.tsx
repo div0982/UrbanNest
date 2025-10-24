@@ -144,6 +144,57 @@ const ListPG = () => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const fillTestTemplate = () => {
+    setFormData({
+      // Basic Details
+      pgName: "Sunshine Residency",
+      description: "A modern PG accommodation located in the heart of the city with excellent connectivity to IT parks and educational institutions. Features spacious rooms, modern amenities, and 24/7 security.",
+      propertyType: "apartment",
+      
+      // Location
+      address: "123 Tech Park Road, Sector 5",
+      city: "bangalore",
+      locality: "Electronic City",
+      pincode: "560100",
+      
+      // Room Details
+      singleRooms: 5,
+      singlePrice: 12000,
+      doubleRooms: 8,
+      doublePrice: 8000,
+      tripleRooms: 3,
+      triplePrice: 6000,
+      
+      // Amenities
+      amenities: ["WiFi", "AC", "Washing Machine", "TV", "Refrigerator", "Geyser", "Parking", "Power Backup", "CCTV", "Security Guard", "Housekeeping", "Water Purifier"],
+      
+      // Preferences
+      genderPreference: "coliving",
+      foodIncluded: true,
+      foodType: "both",
+      
+      // Rules
+      gateClosingTime: "11:00 PM",
+      smokingAllowed: false,
+      drinkingAllowed: false,
+      guestsAllowed: true,
+      
+      // Owner Details
+      ownerName: "Rajesh Kumar",
+      ownerPhone: "9876543210",
+      ownerEmail: "rajesh.kumar@example.com",
+      
+      // KYC
+      aadhar: "123456789012",
+      pan: "ABCDE1234F",
+    });
+
+    toast({
+      title: "Test Template Loaded",
+      description: "Sample data has been filled in. You can now add images and submit for testing.",
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -345,6 +396,21 @@ const ListPG = () => {
                     Basic Information
                   </CardTitle>
                   <CardDescription>Tell us about your PG property</CardDescription>
+                  <div className="mt-4">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={fillTestTemplate}
+                      className="gap-2"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Test Template
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Fill form with sample data for testing (images not included)
+                    </p>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
