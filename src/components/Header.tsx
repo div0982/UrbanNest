@@ -1,13 +1,15 @@
-import { Home, Menu, User, Building, LogOut, Shield, Settings, MapPin } from "lucide-react";
+import { Home, Menu, User, Building, LogOut, Shield, Settings, MapPin, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Header = () => {
   const navigate = useNavigate();
   const { currentUser, userData, logout, isAdmin, isOwner, hasElevatedPrivileges, highestRole } = useAuth();
+  const { actualTheme, toggleTheme } = useTheme();
 
   // Debug logging
   console.log('Header - Role Debug:', { 
@@ -69,6 +71,23 @@ const Header = () => {
 
         {/* Actions */}
         <div className="flex items-center gap-3">
+          {/* Theme Toggle */}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="gap-2 rounded-xl"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${actualTheme === 'dark' ? 'light' : 'dark'} theme`}
+          >
+            {actualTheme === 'dark' ? (
+              <Sun size={18} />
+            ) : (
+              <Moon size={18} />
+            )}
+            <span className="hidden sm:inline">
+              {actualTheme === 'dark' ? 'Light' : 'Dark'}
+            </span>
+          </Button>
           {/* Role-based navigation */}
           {/* Show "For Owners" for owners and admins */}
           {(isOwner || isAdmin) && (
@@ -114,6 +133,15 @@ const Header = () => {
                 >
                   {highestRole}
                 </Badge>
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="gap-2 rounded-xl"
+                onClick={() => navigate("/settings")}
+              >
+                <Settings size={18} />
+                <span className="hidden sm:inline">Settings</span>
               </Button>
               <Button 
                 variant="ghost" 
@@ -192,6 +220,20 @@ const Header = () => {
                 )}
               </nav>
               <div className="mt-6 grid gap-3">
+                {/* Theme Toggle */}
+                <Button 
+                  variant="ghost" 
+                  className="justify-start gap-2 rounded-xl"
+                  onClick={toggleTheme}
+                >
+                  {actualTheme === 'dark' ? (
+                    <Sun size={18} />
+                  ) : (
+                    <Moon size={18} />
+                  )}
+                  Switch to {actualTheme === 'dark' ? 'Light' : 'Dark'} Theme
+                </Button>
+                
                 {/* Role-based mobile navigation */}
                 {/* Show "For Owners" for owners and admins */}
                 {(isOwner || isAdmin) && (
@@ -224,6 +266,13 @@ const Header = () => {
                       onClick={() => navigate("/profile")}
                     >
                       <User size={18} /> {userData?.name || "Profile"}
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-2 rounded-xl"
+                      onClick={() => navigate("/settings")}
+                    >
+                      <Settings size={18} /> Settings
                     </Button>
                     <Button 
                       variant="ghost" 

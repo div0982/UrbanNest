@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import ListPG from "./pages/ListPG";
@@ -22,53 +23,57 @@ import OwnerDashboard from "./pages/OwnerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import MapPage from "./pages/MapPage";
 import LearnMore from "./pages/LearnMore";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/property/:id" element={<PropertyDetails />} />
-            <Route path="/favorites" element={<Favorites />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/list-pg" element={<ListPG />} />
-            <Route path="/students" element={<StudentsPage />} />
-            <Route path="/professionals" element={<ProfessionalsPage />} />
-            <Route path="/co-living" element={<CoLivingPage />} />
-            <Route path="/premium" element={<PremiumPage />} />
-            <Route 
-              path="/owner-dashboard" 
-              element={
-                <ProtectedRoute requiredRole="elevated">
-                  <OwnerDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin-dashboard" 
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route path="/map" element={<MapPage />} />
-            <Route path="/learn-more" element={<LearnMore />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/property/:id" element={<PropertyDetails />} />
+              <Route path="/favorites" element={<Favorites />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/list-pg" element={<ListPG />} />
+              <Route path="/students" element={<StudentsPage />} />
+              <Route path="/professionals" element={<ProfessionalsPage />} />
+              <Route path="/co-living" element={<CoLivingPage />} />
+              <Route path="/premium" element={<PremiumPage />} />
+              <Route 
+                path="/owner-dashboard" 
+                element={
+                  <ProtectedRoute requiredRole="elevated">
+                    <OwnerDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin-dashboard" 
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="/map" element={<MapPage />} />
+              <Route path="/learn-more" element={<LearnMore />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
