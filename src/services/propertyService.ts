@@ -393,6 +393,45 @@ export class PropertyService {
     }
   }
 
+  // Upload multiple property images to Supabase Storage
+  static async uploadPropertyImages(files: File[], propertyId: string): Promise<string[]> {
+    try {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📤 Uploading multiple property images to Supabase Storage:', {
+          propertyId,
+          fileCount: files.length,
+          totalSize: `${(files.reduce((sum, file) => sum + file.size, 0) / 1024 / 1024).toFixed(2)} MB`
+        });
+      }
+
+      // Upload all images to Supabase Storage
+      const results = await SupabaseStorageService.uploadPropertyImages(files, propertyId);
+      
+      // Filter out failed uploads
+      const successfulUploads = results.filter(result => !result.error);
+      const failedUploads = results.filter(result => result.error);
+
+      if (failedUploads.length > 0) {
+        console.warn('Some images failed to upload:', failedUploads);
+      }
+
+      if (successfulUploads.length === 0) {
+        throw new Error('All image uploads failed');
+      }
+
+      const imageUrls = successfulUploads.map(result => result.url);
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Property images uploaded successfully to Supabase:', imageUrls);
+      }
+      
+      return imageUrls;
+    } catch (error) {
+      console.error('Error uploading property images to Supabase:', error);
+      throw error;
+    }
+  }
+
   // Update property with image
   static async updatePropertyWithImage(propertyId: string, updates: Partial<Property>, imageFile?: File): Promise<void> {
     try {

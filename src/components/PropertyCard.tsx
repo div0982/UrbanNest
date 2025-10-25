@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Property } from "@/services/propertyService";
 import { useAuth } from "@/contexts/AuthContext";
 import FavoritesService from "@/services/favoritesService";
+import PropertyImageGallery from "@/components/PropertyImageGallery";
 import { useState, useEffect } from "react";
 
 interface PropertyCardProps {
@@ -93,15 +94,15 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
       className="group overflow-hidden hover:shadow-[var(--shadow-card-hover)] transition-all duration-300 cursor-pointer border-2 hover:border-primary/20"
       onClick={handleCardClick}
     >
-      {/* Image */}
+      {/* Image Gallery */}
       <div className="relative overflow-hidden h-56">
-        <img 
-          src={property.image || "/placeholder.svg"} 
-          alt={property.pgName}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        <PropertyImageGallery
+          images={property.images || [property.image || "/placeholder.svg"]}
+          propertyName={property.pgName}
+          className="h-full"
         />
         {property.verified && (
-          <div className="absolute top-3 left-3">
+          <div className="absolute top-3 left-3 z-10">
             <Badge variant="secondary" className="gap-1 bg-green-100 text-green-800">
               <Shield size={12} />
               Verified
@@ -109,7 +110,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
           </div>
         )}
         {property.rating && (
-          <div className="absolute top-3 right-12">
+          <div className="absolute top-3 right-12 z-10">
             <Badge className="bg-background/90 text-foreground">
               ⭐ {property.rating}
             </Badge>
@@ -119,7 +120,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
         <Button
           size="icon"
           variant="ghost"
-          className="absolute top-3 right-3 bg-background/80 hover:bg-background"
+          className="absolute top-3 right-3 bg-background/80 hover:bg-background z-10"
           onClick={handleFavoriteClick}
           disabled={isLoading}
         >
