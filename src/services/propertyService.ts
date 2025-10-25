@@ -14,7 +14,7 @@ import {
   Timestamp 
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import ImageService from './imageService';
+import SupabaseStorageService from './supabaseStorageService';
 
 export interface Property {
   id?: string;
@@ -364,24 +364,31 @@ export class PropertyService {
     }
   }
 
-  // Upload property image
+  // Upload property image to Supabase Storage
   static async uploadPropertyImage(file: File, propertyId: string): Promise<string> {
     try {
-      // Validate the image file
-      const validation = ImageService.validateImageFile(file);
-      if (!validation.isValid) {
-        throw new Error(validation.error);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📤 Uploading property image to Supabase Storage:', {
+          propertyId,
+          fileName: file.name,
+          fileSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`
+        });
       }
 
-      // Compress the image
-      const compressedFile = await ImageService.compressImage(file);
+      // Upload to Supabase Storage
+      const result = await SupabaseStorageService.uploadPropertyImage(file, propertyId);
       
-      // Upload to Firebase Storage
-      const imageUrl = await ImageService.uploadPropertyImage(compressedFile, propertyId);
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Property image uploaded successfully to Supabase:', result.url);
+      }
       
-      return imageUrl;
+      return result.url;
     } catch (error) {
-      console.error('Error uploading property image:', error);
+      console.error('Error uploading property image to Supabase:', error);
       throw error;
     }
   }
