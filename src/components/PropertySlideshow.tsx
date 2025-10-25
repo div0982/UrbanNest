@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ChevronRight, Play, Pause, Maximize2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Pause, Maximize2, Shield, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface PropertySlideshowProps {
