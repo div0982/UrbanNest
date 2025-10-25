@@ -31,6 +31,7 @@ import {
   CheckCircle,
   X
 } from "lucide-react";
+import PropertySlideshow from "@/components/PropertySlideshow";
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -193,29 +194,21 @@ const PropertyDetails = () => {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Image Gallery */}
-              <div className="relative">
-                <img 
-                  src={property.image || "/placeholder.svg"} 
-                  alt={property.pgName || property.title}
-                  className="w-full h-80 object-cover rounded-2xl"
-                />
-                <div className="absolute top-4 left-4 flex gap-2">
-                  {property.verified && (
-                    <Badge variant="success" className="gap-1">
-                      <Shield size={12} />
-                      Verified
-                    </Badge>
-                  )}
-                  <Badge className="bg-background/90 text-foreground gap-1">
-                    <Star size={12} />
-                    {property.rating || 4.5}
-                  </Badge>
-                </div>
+              {/* Image Slideshow */}
+              <PropertySlideshow
+                images={property.images || [property.image || "/placeholder.svg"]}
+                propertyName={property.pgName || property.title || 'Property'}
+                verified={property.verified}
+                rating={property.rating || 4.5}
+                className="mb-6"
+              />
+              
+              {/* Favorite Button */}
+              <div className="flex justify-end mb-4">
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="absolute top-4 right-4 bg-background/80 hover:bg-background"
+                  className="bg-background/80 hover:bg-background"
                   onClick={toggleFavorite}
                   disabled={isFavoriteLoading}
                 >
