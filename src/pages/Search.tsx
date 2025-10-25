@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
-import { PropertyService, Property, PropertyFilters } from "@/services/propertyService";
+import SupabasePropertyService, { Property } from "@/services/supabasePropertyService";
 import { Search as SearchIcon, SlidersHorizontal, MapPin, Clock, Map, Grid, List, Star, Loader2, RefreshCw } from "lucide-react";
 
 function useQuery() {
@@ -239,9 +239,9 @@ const Search = () => {
       let fetchedProperties: Property[] = [];
       
       if (q) {
-        fetchedProperties = await PropertyService.searchProperties(q);
+        fetchedProperties = await SupabasePropertyService.searchProperties(q);
       } else {
-        fetchedProperties = await PropertyService.getApprovedProperties();
+        fetchedProperties = await SupabasePropertyService.getApprovedProperties();
       }
       
       console.log(`Refreshed: Loaded ${fetchedProperties.length} approved properties from Firebase`);
@@ -272,10 +272,10 @@ const Search = () => {
         
         if (q) {
           // Search with query
-          fetchedProperties = await PropertyService.searchProperties(q);
+          fetchedProperties = await SupabasePropertyService.searchProperties(q);
         } else {
           // Get only approved properties for public search
-          fetchedProperties = await PropertyService.getApprovedProperties();
+          fetchedProperties = await SupabasePropertyService.getApprovedProperties();
         }
         
         // If no Firebase properties found, we still have dummy data to show

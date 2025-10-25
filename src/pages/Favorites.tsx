@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import FavoritesService, { Favorite } from "@/services/favoritesService";
-import { PropertyService } from "@/services/propertyService";
+import SupabaseFavoritesService from "@/services/supabaseFavoritesService";
+import SupabasePropertyService from "@/services/supabasePropertyService";
 
 const Favorites = () => {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ const Favorites = () => {
         setError(null);
         
         // Get user's favorites from Firebase
-        const userFavorites = await FavoritesService.getUserFavorites(currentUser.uid);
+        const userFavorites = await SupabaseFavoritesService.getUserFavorites(currentUser.uid);
         setFavorites(userFavorites);
         
         // Get full property details for each favorite
@@ -102,7 +102,7 @@ const Favorites = () => {
     if (!currentUser) return;
 
     try {
-      await FavoritesService.removeFromFavorites(currentUser.uid, propertyId);
+      await SupabaseFavoritesService.removeFromFavorites(currentUser.uid, propertyId);
       
       // Update local state
       setFavorites(prev => prev.filter(fav => fav.propertyId !== propertyId));

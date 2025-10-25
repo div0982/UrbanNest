@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 
 const Header = () => {
   const navigate = useNavigate();
-  const { currentUser, userData, logout, isAdmin, isOwner, hasElevatedPrivileges, highestRole } = useAuth();
+  const { user: currentUser, userData, signOut: logout, isAdmin, isOwner, hasElevatedPrivileges, highestRole } = useSupabaseAuth();
   const { actualTheme, toggleTheme } = useTheme();
 
   // Debug logging

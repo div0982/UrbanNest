@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { demoProperties } from "@/data/properties";
 import PropertyMap from "@/components/PropertyMap";
-import { PropertyService } from "@/services/propertyService";
+import SupabasePropertyService from "@/services/supabasePropertyService";
 import { Property } from "@/data/properties";
 import { useAuth } from "@/contexts/AuthContext";
 import FavoritesService from "@/services/favoritesService";
@@ -67,7 +67,7 @@ const PropertyDetails = () => {
         console.log('Loading property with ID:', id);
         
         // First try to get from Firebase by ID
-        const firebaseProperty = await PropertyService.getPropertyById(id);
+        const firebaseProperty = await SupabasePropertyService.getPropertyById(id);
         if (firebaseProperty) {
           console.log('Found Firebase property:', firebaseProperty);
           setProperty(firebaseProperty);
